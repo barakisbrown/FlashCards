@@ -12,10 +12,11 @@ namespace DataLayer;
 public static class Configuration
 {
     private const string ConfigStringName = "MyDBSqlite";
+    private const string ConfigMSStringName = "MyMSSQL";
 
     public static DbConfig LoadSettings()
     {
-        var path = AppDomain.CurrentDomain.BaseDirectory + "\\Properties";
+        var path = AppDomain.CurrentDomain.BaseDirectory;
         
         var builder = new ConfigurationBuilder()
             .SetBasePath(path)
@@ -28,7 +29,7 @@ public static class Configuration
 
     public static string GetConnectionStrings()
     {
-        var path = AppDomain.CurrentDomain.BaseDirectory + "\\Properties";
+        var path = AppDomain.CurrentDomain.BaseDirectory;
 
         var builder = new ConfigurationBuilder()
             .SetBasePath(path)
@@ -36,6 +37,6 @@ public static class Configuration
 
         IConfiguration configuration = builder.Build();
 
-        return configuration.GetConnectionString(ConfigStringName);
+        return configuration.GetConnectionString(ConfigMSStringName);
     }
 }
