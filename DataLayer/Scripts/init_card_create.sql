@@ -1,0 +1,30 @@
+﻿USE [flashcards]
+GO
+
+/****** Object:  Table [dbo].[Cards]    Script Date: 1/19/2026 5:29:44 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Cards](
+	[ID] [int] NOT NULL,
+	[Prompty] [nchar](20) NOT NULL,
+	[Answer] [nchar](20) NOT NULL,
+	[StackID] [int] NOT NULL,
+ CONSTRAINT [PK_Cards] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Cards]  WITH CHECK ADD  CONSTRAINT [FK_Cards_Stack] FOREIGN KEY([StackID])
+REFERENCES [dbo].[Stack] ([ID])
+GO
+
+ALTER TABLE [dbo].[Cards] CHECK CONSTRAINT [FK_Cards_Stack]
+GO
+
+
