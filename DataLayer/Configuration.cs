@@ -16,6 +16,7 @@ public static class Configuration
 
     public static DbConfig LoadSettings()
     {
+        Console.WriteLine("ACCESSED");
         var path = AppDomain.CurrentDomain.BaseDirectory;
         
         var builder = new ConfigurationBuilder()
@@ -24,7 +25,7 @@ public static class Configuration
 
         IConfiguration configuration = builder.Build();
 
-        return configuration.GetSection("AppKey").Get<DbConfig>();
+        return configuration.GetSection("AppKeys").Get<DbConfig>();
     }
 
     public static string GetConnectionStrings()
