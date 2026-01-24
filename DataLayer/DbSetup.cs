@@ -18,37 +18,85 @@ using Spectre.Console;
 public class DbSetup
 {
     private readonly DbConfig appSettings = Configuration.LoadSettings();
-    private readonly string connectionString = Configuration.GetConnectionStrings();
-    private static bool IsSetup = false;
+    private readonly string connectionStringMain;
+    private readonly string connectionStringBackup;
 
+    private bool IsSetup = false;
+
+    /// <summary>
+    /// Initializes a new instance of the DbSetup class and configures the main and backup database connection strings.
+    /// </summary>
+    /// <remarks>If the setup has not already been performed, this constructor initializes the setup process
+    /// automatically. This ensures that the database connections are ready for use after instantiation.</remarks>
     public DbSetup()
     {
+        connectionStringMain = Configuration.GetConnectionStrings(appSettings.MainConn);
+        connectionStringBackup = Configuration.GetConnectionStrings(appSettings.BackupConn);
         if (!IsSetup)
             InitSetup();
     }
-
+    
+    /// <summary>
+    /// Performs the initial setup for the application database, ensuring that the database and required tables exist.
+    /// </summary>
+    /// <remarks>This method checks for the existence of the database and the necessary tables. If they do not
+    /// exist, it creates them. This method should be called before performing any operations that depend on the
+    /// database being initialized.</remarks>
     private void InitSetup()
     {
         AnsiConsole.WriteLine("FlashCard App Database Setup");
         if (DbExist())
         {
-            IsSetup = true;
+            var card = TableExist(appSettings.CardTable);
+            var stack = TableExist(appSettings.StackTable);
+            if (card && stack)
+                IsSetup = true;
+            else
+            {
+                if ((!stack)||(!card))
+                {
+                    AnsiConsole.WriteLine($"{stack} table does not exist");
+                    AnsiConsole.WriteLine($"{card} table does not exist");
+                    AnsiConsole.WriteLine("Creating Tables");
+                    CreateTables();
+
+                }
+                IsSetup = true;
+            }
         }
         else
         {
             AnsiConsole.WriteLine();
-            AnsiConsole.WriteLine("Database [FlashCards] has not yet been created");
-            // STEPS BELOW TO CREATE DB
-            
+            CreateDB();
+            AnsiConsole.WriteLine();
+            AnsiConsole.WriteLine("Creating Tables");
+            CreateTables();
+            AnsiConsole.WriteLine("Exiting Initial Setup.");
+            IsSetup = true;
         }
     }
 
+    /// <summary>
+    /// Determines whether the target database exists on the SQL Server instance.
+    /// </summary>
+    /// <remarks>This method attempts to open a connection to the SQL Server and checks for the existence of
+    /// the database specified in the application settings. If the database does not exist or the server is unreachable,
+    /// the method returns false.</remarks>
+    /// <returns>true if the database exists; otherwise, false.</returns>
     private bool DbExist()
     {
-        using var conn = new SqlConnection(connectionString);
+        using var conn = new SqlConnection(connectionStringMain);
         if (conn.State != System.Data.ConnectionState.Open)
-            conn.Open();
-
+            try
+            {
+                conn.Open();
+            }
+            catch (SqlException e)
+            {
+                AnsiConsole.WriteLine("ERROR : DATABASE FLASHCARDS DOES NOT EXIST...");
+                // DATABASE DOES NOT EXIST HERE
+                return false;
+            }
         // Connection is OPEN
         using var cmd = new SqlCommand();
         cmd.CommandText = "SELECT DB_ID(@DbName)";
@@ -59,14 +107,29 @@ public class DbSetup
         cmd.Prepare();
 
         var Exist = cmd.ExecuteScalar();
-        return DBNull.Value.Equals(Exist);
+        return !DBNull.Value.Equals(Exist);
     }
 
+    /// <summary>
+    /// Determines whether a table with the specified name exists in the main database.
+    /// </summary>
+    /// <remarks>This method attempts to open a connection to the main database if it is not already open. If
+    /// the database does not exist or cannot be accessed, a SqlException is thrown.</remarks>
+    /// <param name="tableName">The name of the table to check for existence. Can be null or empty, in which case the method will return false.</param>
+    /// <returns>true if a table with the specified name exists in the database; otherwise, false.</returns>
     private bool TableExist(string? tableName)
     {
-        using var conn = new SqlConnection(connectionString);
+        using var conn = new SqlConnection(connectionStringMain);
         if (conn.State != System.Data.ConnectionState.Open)
-            conn.Open();
+            try
+            {
+                conn.Open();
+            }
+            catch (SqlException e)
+            {
+                AnsiConsole.WriteLine("ERROR : DATABASE FLASHCARDS DOES NOT EXIST..");
+                throw;
+            }
 
         using var cmd = new SqlCommand();
         cmd.Connection = conn;
@@ -80,13 +143,23 @@ public class DbSetup
         return result == 1;
     }
 
-    private void ExectureScript(string fileName)
+    /// <summary>
+    /// Executes a SQL script from the specified file against the database using the provided connection string.
+    /// </summary>
+    /// <remarks>If an error occurs while reading the script file or executing the script, the method writes
+    /// error details to the console and returns false. The current working directory is set to the application's base
+    /// directory before reading the script file.</remarks>
+    /// <param name="fileName">The name of the SQL script file to execute. The file must exist in the 'Scripts' directory under the
+    /// application's base directory.</param>
+    /// <param name="connection">The connection string used to establish a connection to the target SQL Server database.</param>
+    /// <returns>true if the script executes successfully; otherwise, false.</returns>
+    private bool ExectureScript(string fileName,string connection)
     {
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
         string root = Directory.GetCurrentDirectory();
         string script = File.ReadAllText(root + "\\Scripts\\" + fileName);
 
-        using var conn = new SqlConnection(connectionString);
+        using var conn = new SqlConnection(connection);
         Server server = new(new ServerConnection(conn));
 
         try
@@ -97,9 +170,31 @@ public class DbSetup
         {
             AnsiConsole.WriteLine($"Error Processing Sql Script.  Script being used is {fileName}");
             AnsiConsole.WriteLine($"Excpetion Message that was caught is : \n{e.Message}");
-            throw;
+            return false;
         }
 
         AnsiConsole.WriteLine($"{fileName} script was successfully executed.");
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to create the database using the configured SQL script and backup connection string.
+    /// </summary>
+    /// <returns>true if the database was created successfully; otherwise, false.</returns>
+    private bool CreateDB()
+    {
+        bool success = ExectureScript(appSettings.CreateDBSql,connectionStringBackup);
+        return success;
+    }
+
+    /// <summary>
+    /// Calls ExecuteScript for Stack Table and then Card Table.
+    /// </summary>
+    /// <returns>True if both tables succeeded in creation. False Otherwise</returns>
+    private bool CreateTables()
+    {
+        bool stackSuccess = ExectureScript(appSettings.CreateStackSql,connectionStringMain);
+        bool cardSuccess = ExectureScript(appSettings.CreateCardSql,connectionStringMain);
+        return stackSuccess && cardSuccess;
     }
 }
