@@ -10,7 +10,7 @@ GO
 
 CREATE TABLE [dbo].[Cards](
 	[ID] [int] NOT NULL,
-	[Prompty] [nchar](20) NOT NULL,
+	[Prompt] [nchar](20) NOT NULL,
 	[Answer] [nchar](20) NOT NULL,
 	[StackID] [int] NOT NULL,
  CONSTRAINT [PK_Cards] PRIMARY KEY CLUSTERED 

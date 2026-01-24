@@ -5,9 +5,9 @@ GO
 CREATE DATABASE [flashcards]
  CONTAINMENT = NONE
  ON  PRIMARY 
-( NAME = N'flashcards', FILENAME = N'C:\Users\barak\flashcards.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+( NAME = N'flashcards-test', FILENAME = N'C:\Users\barak\flashcards-test.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
  LOG ON 
-( NAME = N'flashcards_log', FILENAME = N'C:\Users\barak\flashcards_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+( NAME = N'flashcards_log_test', FILENAME = N'C:\Users\barak\flashcards_log_test.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
  WITH CATALOG_COLLATION = DATABASE_DEFAULT
 GO
 
