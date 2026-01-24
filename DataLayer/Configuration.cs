@@ -11,9 +11,6 @@ namespace DataLayer;
 /// </summary>
 public static class Configuration
 {
-    private const string ConfigStringName = "MyDBSqlite";
-    private const string ConfigMSStringName = "MyMSSQL";
-
     public static DbConfig LoadSettings()
     {
         Console.WriteLine("ACCESSED");
@@ -28,7 +25,7 @@ public static class Configuration
         return configuration.GetSection("AppKeys").Get<DbConfig>();
     }
 
-    public static string GetConnectionStrings()
+    public static string GetConnectionStrings(string whichConnection)
     {
         var path = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -38,6 +35,6 @@ public static class Configuration
 
         IConfiguration configuration = builder.Build();
 
-        return configuration.GetConnectionString(ConfigMSStringName);
+        return configuration.GetConnectionString(whichConnection);
     }
 }
