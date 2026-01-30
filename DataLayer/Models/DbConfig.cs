@@ -11,10 +11,5 @@ public class DbConfig
     // SQL FILES BELOW
     public string CreateDBSql { get; set; } = string.Empty;
     public string CreateCardSql { get; set; } = string.Empty;
-    public string CreateStackSql { get; set; } = string.Empty;
-
-    // CONNECTION STRING
-
-    public string MainConn { get; set; } = string.Empty;
-    public string BackupConn { get; set; } = string.Empty;
+    public string CreateStackSql { get; set; } = string.Empty;   
 }
