@@ -17,10 +17,8 @@ using Spectre.Console;
  */
 public class DbSetup
 {
-    private readonly DbConfig appSettings = Configuration.LoadSettings();
-    private readonly string connectionStringMain;
-    private readonly string connectionStringBackup;
-
+    private readonly DbConfig appSettings = Configuration.LoadSettings();    
+    private readonly DbUser userSecrets = Configuration.GetUserSecretsConnStrings();
     private bool IsSetup = false;
 
     /// <summary>
@@ -30,8 +28,7 @@ public class DbSetup
     /// automatically. This ensures that the database connections are ready for use after instantiation.</remarks>
     public DbSetup()
     {
-        connectionStringMain = Configuration.GetConnectionStrings(appSettings.MainConn);
-        connectionStringBackup = Configuration.GetConnectionStrings(appSettings.BackupConn);
+        
         if (!IsSetup)
             InitSetup();
     }
@@ -84,8 +81,8 @@ public class DbSetup
     /// the method returns false.</remarks>
     /// <returns>true if the database exists; otherwise, false.</returns>
     private bool DbExist()
-    {
-        using var conn = new SqlConnection(connectionStringMain);
+    {        
+        using var conn = new SqlConnection(userSecrets.Main);
         if (conn.State != System.Data.ConnectionState.Open)
             try
             {
@@ -119,7 +116,7 @@ public class DbSetup
     /// <returns>true if a table with the specified name exists in the database; otherwise, false.</returns>
     private bool TableExist(string? tableName)
     {
-        using var conn = new SqlConnection(connectionStringMain);
+        using var conn = new SqlConnection(userSecrets.Main);
         if (conn.State != System.Data.ConnectionState.Open)
             try
             {
@@ -183,7 +180,7 @@ public class DbSetup
     /// <returns>true if the database was created successfully; otherwise, false.</returns>
     private bool CreateDB()
     {
-        bool success = ExectureScript(appSettings.CreateDBSql,connectionStringBackup);
+        bool success = ExectureScript(appSettings.CreateDBSql,userSecrets.Backup);
         return success;
     }
 
@@ -193,8 +190,8 @@ public class DbSetup
     /// <returns>True if both tables succeeded in creation. False Otherwise</returns>
     private bool CreateTables()
     {
-        bool stackSuccess = ExectureScript(appSettings.CreateStackSql,connectionStringMain);
-        bool cardSuccess = ExectureScript(appSettings.CreateCardSql,connectionStringMain);
+        bool stackSuccess = ExectureScript(appSettings.CreateStackSql,userSecrets.Main);
+        bool cardSuccess = ExectureScript(appSettings.CreateCardSql,userSecrets.Main);
         return stackSuccess && cardSuccess;
     }
 }

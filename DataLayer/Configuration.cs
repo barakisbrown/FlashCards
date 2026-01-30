@@ -14,7 +14,7 @@ public static class Configuration
     public static DbConfig LoadSettings()
     {
         Console.WriteLine("ACCESSED");
-        var path = AppDomain.CurrentDomain.BaseDirectory;
+        var path = AppContext.BaseDirectory;
         
         var builder = new ConfigurationBuilder()
             .SetBasePath(path)
@@ -30,11 +30,25 @@ public static class Configuration
         var path = AppDomain.CurrentDomain.BaseDirectory;
 
         var builder = new ConfigurationBuilder()
-            .SetBasePath(path)
+            .SetBasePath(path)     
             .AddJsonFile("appsettings.json", false);
 
         IConfiguration configuration = builder.Build();
 
         return configuration.GetConnectionString(whichConnection);
+    }
+
+    public static DbUser GetUserSecretsConnStrings()
+    {
+        var path = Directory.GetCurrentDirectory();
+
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(path)
+            .AddJsonFile("appsettings.json", false)
+            .AddUserSecrets<DbConfig>(true);
+
+        IConfiguration config = builder.Build();
+
+        return config.GetSection("ConnectionStrings").Get<DbUser>();            
     }
 }
