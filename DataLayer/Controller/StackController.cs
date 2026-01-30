@@ -1,16 +1,11 @@
 ﻿using DataLayer.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataLayer.Controller
 {    
     internal static class StackController
     {
         private static readonly DbConfig appSettings = Configuration.LoadSettings();
-        private static readonly string connectionStringMain = Configuration.GetConnectionStrings(appSettings.MainConn);
+        // FIX CONNECTION STRING ISSUES
 
         public static bool CreateStack(Stack stack)
         {

@@ -5,7 +5,7 @@ namespace DataLayer.Controller
     internal static class CardController
     {
         private static readonly DbConfig appSettings = Configuration.LoadSettings();
-        private static readonly string connectionStringMain = Configuration.GetConnectionStrings(appSettings.MainConn);
+        // FIX CONNECTION STRING ISSUES
 
         public static bool CreateCard(Card card)
         {
