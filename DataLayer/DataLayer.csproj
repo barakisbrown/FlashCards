@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\**" />
+    <EmbeddedResource Remove="Controllers\**" />
+    <None Remove="Controllers\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Scripts\init_card_create.sql" />
     <None Remove="Scripts\init_create_db.sql" />
     <None Remove="Scripts\init_stack_create.sql" />
@@ -34,10 +40,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="180.10.0" />
     <PackageReference Include="Spectre.Console" Version="0.54.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>
