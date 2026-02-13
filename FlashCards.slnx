@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="App/App.csproj" />
   <Project Path="DataLayer/DataLayer.csproj" />
+  <Project Path="UI/UI.csproj" Id="f9da7de9-bd94-42f1-8a72-d664ad7d91a2" />
 </Solution>
