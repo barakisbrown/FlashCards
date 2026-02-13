@@ -2,9 +2,7 @@
 using DataLayer.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using Spectre.Console;
-using System.Data.Common;
 
 namespace DataLayer.Controller
 {    

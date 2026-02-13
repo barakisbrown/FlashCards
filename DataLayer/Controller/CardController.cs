@@ -1,10 +1,8 @@
 ﻿using Dapper;
 using DataLayer.Models;
 using Microsoft.Data.SqlClient;
-using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Spectre.Console;
-using System.Collections;
 
 namespace DataLayer.Controller
 {
