@@ -1,4 +1,5 @@
 ﻿using DataLayer.Controller;
+using Spectre.Console;
 
 namespace UI
 {
@@ -9,7 +10,8 @@ namespace UI
 
         public void DisplayMenu()
         {
-
+            AnsiConsole.WriteLine($"Number of FlashCards = {card.Count}");
+            AnsiConsole.WriteLine($"Number of Stacks = {_stack.COUNT}");
         }
     }
 }
