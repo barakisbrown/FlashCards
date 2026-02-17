@@ -5,6 +5,8 @@ namespace UI
 {
     public class Menu(CardController card,StackController stack)
     {
+        private readonly string _appName = "Flashcards App by Matthew Brown";
+        private readonly string _appNote = "Table DEFAULT can not be deleted since it is a system table.";
         private readonly StackController _stack = stack;
         private readonly CardController _card = card;
 
