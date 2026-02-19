@@ -1,19 +1,81 @@
 ﻿using DataLayer.Controller;
+using DataLayer.Models;
 using Spectre.Console;
 
 namespace UI
 {
-    public class Menu(CardController card,StackController stack)
+    public class Menu
     {
-        private readonly string _appName = "Flashcards App by Matthew Brown";
+        private readonly string _appName = "Flashcards App";
         private readonly string _appNote = "Table DEFAULT can not be deleted since it is a system table.";
-        private readonly StackController _stack = stack;
-        private readonly CardController _card = card;
+        private readonly StackController _stack;
+        private readonly CardController _card;
+
+        public Menu(CardController card, StackController stack)
+        {
+            _card = card;
+            _stack = stack;
+        }
 
         public void DisplayMenu()
         {
-            AnsiConsole.WriteLine($"Number of FlashCards = {card.Count}");
-            AnsiConsole.WriteLine($"Number of Stacks = {_stack.COUNT}");
+            while (true)
+            {
+                AnsiConsole.Clear();
+                AnsiConsole.Write(new FigletText(_appName).Color(Color.Green));
+                AnsiConsole.MarkupLine("[grey]{0}[/]", _appNote);
+                AnsiConsole.WriteLine($"Number of FlashCards = {_card.Count}");
+                AnsiConsole.WriteLine($"Number of Stacks = {_stack.COUNT}");
+                AnsiConsole.WriteLine();
+
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("Select an option:")
+                        .AddChoices(new[] {
+                            "Study Notes Area",
+                            "Manage FlashCards",                            
+                            "Manage Stacks",
+                            "List Cards",
+                            "Exit"
+                        }));
+
+                switch (choice)
+                {
+                    case "Study Notes Area":
+                        AnsiConsole.MarkupLine("[yellow]Study flow not implemented yet.[/]");
+                        break;
+                    case "Manage FlashCards":
+                        AnsiConsole.MarkupLine("[green]Create card flow placeholder.[/]");
+                        break;
+                    case "Manage Stacks":
+                        AnsiConsole.MarkupLine("[green]Manage stacks placeholder.[/]");
+                        break;
+                    case "List Cards":
+                        ListCards();
+                        break;
+                    case "Exit":
+                        return;
+                }
+
+                AnsiConsole.MarkupLine("\nPress any key to continue...");
+                Console.ReadKey(true);
+            }
+        }
+
+        private void ListCards()
+        {
+            var cards = _card.GetAllCards();
+            var stacks = _stack.GetAllStacks();
+            var stackLookup = stacks.ToDictionary(s => s.ID, s => s.Name);
+
+            var table = new Table().AddColumns("Prompt", "Answer", "Stack");
+            foreach (var c in cards)
+            {
+                var stackName = stackLookup.ContainsKey(c.StackID) ? stackLookup[c.StackID] : "DEFAULT";
+                table.AddRow(c.Prompt ?? string.Empty, c.Answer ?? string.Empty, stackName);
+            }
+
+            AnsiConsole.Write(table);
         }
     }
 }
