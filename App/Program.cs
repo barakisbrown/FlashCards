@@ -9,7 +9,7 @@ var cardTable = new CardController();
 var stackTable = new StackController();
 
 AnsiConsole.WriteLine("Begin UI Application Here");
-var menu = new Menu(cardTable, stackTable);
+var menu = new MainMenu(cardTable, stackTable);
 menu.DisplayMenu();
 
 AnsiConsole.WriteLine("Thank you for using the FlashCards App.  Have a good day.");

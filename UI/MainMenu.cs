@@ -45,10 +45,10 @@ namespace UI
                         AnsiConsole.MarkupLine("[yellow]Study flow not implemented yet.[/]");
                         break;
                     case "Manage FlashCards":
-                        AnsiConsole.MarkupLine("[green]Create card flow placeholder.[/]");
+                        AnsiConsole.MarkupLine("[green]Mange Flashcards not implemented yet! [/]");
                         break;
                     case "Manage Stacks":
-                        AnsiConsole.MarkupLine("[green]Manage stacks placeholder.[/]");
+                        AnsiConsole.MarkupLine("[green]Manage Stacks not implemented yet!.[/]");
                         break;
                     case "List Cards":
                         ListCards();
