@@ -1,6 +1,4 @@
-﻿FLASHCARDS MENU
-
-View -> view Flashcards of the stack
+﻿View -> view Flashcards of the stack
 Add -> Add a new Flashcard
 Edit -> Edit a Flashcard
 Delete -> Delete a Flash Card

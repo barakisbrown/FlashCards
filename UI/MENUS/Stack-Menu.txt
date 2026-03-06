@@ -1,6 +1,4 @@
-﻿Stack Menu
-
-Create → Create a new Stack
+﻿Add → Create a new Stack
 Rename -> Rename a stack
 Delete -> delete a stack
 View -> view list of stacks

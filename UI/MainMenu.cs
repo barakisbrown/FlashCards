@@ -4,19 +4,21 @@ using Spectre.Console;
 
 namespace UI
 {
-    public class Menu
+    public class MainMenu : IMenu
     {
         private readonly string _appName = "Flashcards App";
         private readonly string _appNote = "Table DEFAULT can not be deleted since it is a system table.";
         private readonly StackController _stack;
         private readonly CardController _card;
 
-        public Menu(CardController card, StackController stack)
+        public MainMenu(CardController card, StackController stack)
         {
             _card = card;
             _stack = stack;
         }
 
+        public CardController Card { get => _card; init => _card = value; }
+        public StackController Stack { get => _stack; init  => _stack = value; }
         public void DisplayMenu()
         {
             while (true)
@@ -45,10 +47,10 @@ namespace UI
                         AnsiConsole.MarkupLine("[yellow]Study flow not implemented yet.[/]");
                         break;
                     case "Manage FlashCards":
-                        AnsiConsole.MarkupLine("[green]Mange Flashcards not implemented yet! [/]");
+                        new CardMenu(_card,_stack).DisplayMenu();
                         break;
                     case "Manage Stacks":
-                        AnsiConsole.MarkupLine("[green]Manage Stacks not implemented yet!.[/]");
+                        new StackMenu(_card,_stack).DisplayMenu();
                         break;
                     case "List Cards":
                         ListCards();
@@ -60,6 +62,10 @@ namespace UI
                 AnsiConsole.MarkupLine("\nPress any key to continue...");
                 Console.ReadKey(true);
             }
+        }
+        public void LoadMenu(string menuName)
+        {
+            throw new NotImplementedException();
         }
 
         private void ListCards()
