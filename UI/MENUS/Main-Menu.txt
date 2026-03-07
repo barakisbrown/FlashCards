@@ -1,6 +1,5 @@
-﻿MAIN MENU
-
-Study -> Study Area Menu
-Stack -> Stack Menu
-FLASH -> Flash Cards Menu
-EXIT -> Exit Flash Cards App
+﻿Study Sessions
+FlashCards
+Stacks
+List-Cards
+Exit
