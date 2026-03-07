@@ -25,7 +25,8 @@ public class StackMenu : IMenu
             AnsiConsole.Clear();
             AnsiConsole.Write(new FigletText("Manage Stack Menu").Color(Color.Green));
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("[bold]NOTE: DEFAULT STACK CAN NOT BE REMOVED[/bold]");
+            AnsiConsole.MarkupLine("[b]NOTE: DEFAULT STACK CAN NOT BE REMOVED[/]");
+            AnsiConsole.WriteLine();
             AnsiConsole.WriteLine($"Number of Stacks created currently {Stack.COUNT}");
             AnsiConsole.WriteLine();
             AnsiConsole.WriteLine();
@@ -38,7 +39,10 @@ public class StackMenu : IMenu
                 case "Add":
                 case "Rename":
                 case "Delete":
-                case "View": AnsiConsole.WriteLine("Not Implemented Yet"); break;
+                case "View": 
+                    AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
+                    Thread.Sleep(1000);
+                    continue;
                 case "Exit": break;
             }
             break;
@@ -46,7 +50,7 @@ public class StackMenu : IMenu
     }
     public void LoadMenu(string menuName)
     {
-        var path = AppDomain.CurrentDomain.BaseDirectory;
+        var path = AppDomain.CurrentDomain.BaseDirectory + "\\MENUS\\";         
 
         _menu = File.ReadAllLines(Path.Combine(path, menuName));
     }

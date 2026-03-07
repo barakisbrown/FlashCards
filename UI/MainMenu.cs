@@ -10,11 +10,14 @@ namespace UI
         private readonly string _appNote = "Table DEFAULT can not be deleted since it is a system table.";
         private readonly StackController _stack;
         private readonly CardController _card;
+        private string[] _menu = [];
 
         public MainMenu(CardController card, StackController stack)
         {
             _card = card;
             _stack = stack;
+            LoadMenu(IMenu.MainMenuTitle);
+
         }
 
         public CardController Card { get => _card; init => _card = value; }
@@ -30,42 +33,40 @@ namespace UI
                 AnsiConsole.WriteLine($"Number of Stacks = {_stack.COUNT}");
                 AnsiConsole.WriteLine();
 
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("Select an option:")
-                        .AddChoices(new[] {
-                            "Study Notes Area",
-                            "Manage FlashCards",                            
-                            "Manage Stacks",
-                            "List Cards",
-                            "Exit"
-                        }));
+                var choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                        .Title("Select an option:").AddChoices(_menu));
 
-                switch (choice)
+                 switch (choice)
                 {
-                    case "Study Notes Area":
+                    case "Study Sessions":
                         AnsiConsole.MarkupLine("[yellow]Study flow not implemented yet.[/]");
-                        break;
-                    case "Manage FlashCards":
+                        Thread.Sleep(1000);
+                        continue;
+                    case "FlashCards":
                         new CardMenu(_card,_stack).DisplayMenu();
-                        break;
-                    case "Manage Stacks":
+                        continue;
+                    case "Stacks":
                         new StackMenu(_card,_stack).DisplayMenu();
-                        break;
-                    case "List Cards":
+                        continue;
+                    case "List-Cards":
                         ListCards();
-                        break;
+                        AnsiConsole.WriteLine("Press any key to return to menu.");
+                        Console.ReadKey(true);
+                        continue;
                     case "Exit":
-                        return;
+                        break;
                 }
 
-                AnsiConsole.MarkupLine("\nPress any key to continue...");
-                Console.ReadKey(true);
+                break;
             }
         }
         public void LoadMenu(string menuName)
         {
-            throw new NotImplementedException();
+            var path = AppDomain.CurrentDomain.BaseDirectory;
+            path += "//MENUS//";
+
+            _menu = File.ReadAllLines(Path.Combine(path, menuName));
+
         }
 
         private void ListCards()

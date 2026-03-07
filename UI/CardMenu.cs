@@ -29,14 +29,16 @@ public class CardMenu : IMenu
             AnsiConsole.WriteLine();
 
             var choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                .Title("Please select a choice").AddChoices(_menu));
+                .Title("Select an option").AddChoices(_menu));
 
             switch (choice)
             {
                 case "View" :
                 case "Add"  :
                 case "Edit" :
-                case "Delete" : AnsiConsole.WriteLine("Not Implemented Yet"); break;
+                case "Delete" : 
+                    AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
+                    Thread.Sleep(1000); continue;
                 case "Exit" : break;
             }
             break;
@@ -45,6 +47,7 @@ public class CardMenu : IMenu
     public void LoadMenu(string menuName)
     {
         var path = AppDomain.CurrentDomain.BaseDirectory;
+        path += "//MENUS//";
 
         _menu = File.ReadAllLines(Path.Combine(path, menuName));
     }
