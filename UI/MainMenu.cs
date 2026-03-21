@@ -75,7 +75,10 @@ namespace UI
             var stacks = _stack.GetAllStacks();
             var stackLookup = stacks.ToDictionary(s => s.ID, s => s.Name);
 
-            var table = new Table().AddColumns("Prompt", "Answer", "Stack");
+            var table = new Table();
+            table.AddColumns("Prompt");
+            table.AddColumn("Answer",c=>c.Centered());
+            table.AddColumn("Stack");
             foreach (var c in cards)
             {
                 var stackName = stackLookup.ContainsKey(c.StackID) ? stackLookup[c.StackID] : "DEFAULT";
