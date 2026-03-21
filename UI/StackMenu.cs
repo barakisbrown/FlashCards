@@ -1,4 +1,5 @@
 using DataLayer.Controller;
+using DataLayer.Models;
 using Spectre.Console;
 
 namespace UI;
@@ -39,9 +40,13 @@ public class StackMenu : IMenu
                 case "Add":
                 case "Rename":
                 case "Delete":
-                case "View": 
                     AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
                     Thread.Sleep(1000);
+                    continue;
+                case "View":                      
+                    ShowStackCardCount();
+                    AnsiConsole.Write("Press any key to return to menu.");
+                    Console.ReadKey(true);
                     continue;
                 case "Exit": break;
             }
@@ -55,9 +60,21 @@ public class StackMenu : IMenu
         _menu = File.ReadAllLines(Path.Combine(path, menuName));
     }
 
-    private void ListAllStacks()
+    private void ShowStackCardCount()
     {
-        // TODO : VIEW [CardsPerStack] has been created in SQL SERVER
-        // Add Function in StacksController to view this here.
+        List<CardsPerStackDTO> cardPerStacks = Stack.StackTotalCardView();
+
+        // DISPLAY TABLE
+        var table = new Table().RoundedBorder();
+        table.AddColumn("Name");
+        table.AddColumn("Number of Cards",col => col.RightAligned());
+
+        foreach(var cps in cardPerStacks)
+        {
+            table.AddRow(cps.Name,cps.NumCards.ToString());
+        }
+
+        AnsiConsole.Write(table);
+
     }
 }
