@@ -18,6 +18,7 @@ namespace DataLayer.Controller
         private readonly string insertSql = "INSERT INTO dbo.Stack(Name) VALUE (@Name)";
         private readonly string editSQL = "UPDATE dbo.Stack WHERE dbo.Stack.Name = @Name";
         private readonly string deleteSQL = "DELETE dbo.Stack WHERE dbo.Stack.Name = @Name";
+        private readonly string viewSql = "SELECT * FROM dbo.CardsPerStack";
         private List<Stack> stacks = [];
 
         public StackController()
@@ -79,8 +80,6 @@ namespace DataLayer.Controller
 
         }
 
-
-
         public int COUNT => stacks.Count;
         private SqlConnection MakeConnection
         {
@@ -99,6 +98,12 @@ namespace DataLayer.Controller
                     }
                 return conn;
             }
+        }
+
+        public List<CardsPerStackDTO> StackTotalCardView()
+        {
+            return MakeConnection.Query<CardsPerStackDTO>(viewSql).ToList();
+            
         }
     }
 }
