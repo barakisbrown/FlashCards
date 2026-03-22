@@ -1,5 +1,6 @@
 using DataLayer.Controller;
 using DataLayer.Models;
+using Microsoft.IdentityModel.Tokens;
 using Spectre.Console;
 
 namespace UI;
@@ -38,6 +39,9 @@ public class StackMenu : IMenu
             switch (choice)
             {
                 case "Add":
+                    AddNewStack();
+                    Thread.Sleep(2000);
+                    continue;
                 case "Rename":
                 case "Delete":
                     AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
@@ -75,6 +79,34 @@ public class StackMenu : IMenu
         }
 
         AnsiConsole.Write(table);
-
+    }
+    /// <summary>
+    /// AddNewTable will ask the user for a new stak to be created.
+    /// Note: Name of the Stacks are UNIQUE and DEFAULT can not be used either since it is used internally.
+    /// </summary>
+    private void AddNewStack()
+    {
+        while (true)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine("Please enter a new Stack Name to be used");
+            AnsiConsole.WriteLine("Stack Names need to be Unique and not called DEFAULT");
+            var name = AnsiConsole.Ask<string>("Stack Name => ");
+            // CHECK FOR EMPTY STRING / DUPLICATE / DEFAULT
+            if (!Stack.AddStack(name))
+            {
+                AnsiConsole.MarkupLineInterpolated($"[red]Name enteted must NOT be empty or already exist..Try again[/].");
+                Console.WriteLine("Press any key to try again.");
+                Console.ReadKey(true);
+                continue;
+            }            
+            else
+            {
+                AnsiConsole.WriteLine($"{name} has been added to the stacks.");
+                Thread.Sleep(2000);
+                break;
+            }
+        }
+        
     }
 }

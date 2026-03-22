@@ -3,6 +3,7 @@ using DataLayer.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Spectre.Console;
+using System.Data;
 
 namespace DataLayer.Controller
 {    
@@ -13,27 +14,28 @@ namespace DataLayer.Controller
     /// </summary>
     public class StackController
     {
-        private static readonly DbUser dataSource = Configuration.GetUserSecretsConnStrings();
-        private readonly string selectSql = "SELECT * FROM dbo.Stack";
-        private readonly string insertSql = "INSERT INTO dbo.Stack(Name) VALUE (@Name)";
-        private readonly string editSQL = "UPDATE dbo.Stack WHERE dbo.Stack.Name = @Name";
-        private readonly string deleteSQL = "DELETE dbo.Stack WHERE dbo.Stack.Name = @Name";
-        private readonly string viewSql = "SELECT * FROM dbo.CardsPerStack";
-        private List<Stack> stacks = [];
+        private static readonly DbUser _dataSource = Configuration.GetUserSecretsConnStrings();
+        private const string _selectSql = "SELECT * FROM dbo.Stack";
+        private const string _insertSql = "INSERT INTO dbo.Stack (Name) VALUES (@Name)";
+        private const string _editSQL = "UPDATE dbo.Stack SET Name = @NewName WHERE Name = @OldName";
+        private const string _deleteSQL = "DELETE FROM dbo.Stack WHERE Name = @Name";
+        private const string _viewSql = "SELECT * FROM dbo.CardsPerStack";
+        private List<Stack> _stacks = new List<Stack>();
 
         public StackController()
         {
-            stacks = GetAllStacks();
+            _stacks = GetAllStacks();
         }
 
         public bool AddStack(string? Name)
         {
-            if (Name.IsNullOrEmpty() || VeriyName(Name)) return false;
-            object[] param = { new { Name } };
-            bool success = MakeConnection.Execute(insertSql, param) == 1;
-            if (success)
+            if (string.IsNullOrWhiteSpace(Name) || VerifyName(Name))
+                return false;
+
+            var rows = MakeConnection.Execute(_insertSql, new { Name });
+            if (rows == 1)
             {
-                stacks = GetAllStacks();
+                _stacks = GetAllStacks();
                 return true;
             }
 
@@ -44,11 +46,11 @@ namespace DataLayer.Controller
         {
             if (NameEdit.IsNullOrEmpty()) return false;
 
-            if (VeriyName(NameEdit)) return false;
+            if (VerifyName(NameEdit)) return false;
 
-            if (MakeConnection.Execute(editSQL, new { Name = NameEdit }) == 1)
+            if (MakeConnection.Execute(_editSQL, new { Name = NameEdit }) == 1)
             {
-                stacks = GetAllStacks();
+                _stacks = GetAllStacks();
                 return true;
             }
 
@@ -58,13 +60,19 @@ namespace DataLayer.Controller
         public bool DeleteStack(string? deleteMe)
         {
             if (deleteMe.IsNullOrEmpty() || deleteMe == "DEFAULT") return false;
-            return MakeConnection.Execute(deleteSQL, new { Name = deleteMe }) == 1;
+            var deleted = MakeConnection.Execute(_deleteSQL, new { Name = deleteMe }) == 1;
+            if (deleted)
+            {
+                _stacks = GetAllStacks();
+                return true;
+            }
+            return false;
         }
 
 
         public List<Stack> GetAllStacks()
         {
-            return MakeConnection.Query<Stack>(selectSql).ToList();
+            return MakeConnection.Query<Stack>(_selectSql).ToList();
 
         }
 
@@ -73,27 +81,21 @@ namespace DataLayer.Controller
         /// </summary>
         /// <param name="Name">Name to be found</param>
         /// <returns>true if found false if not found</returns>
-        public bool VeriyName(string ?Name)
-        {
-            var exist = stacks.FirstOrDefault(x => x.Name == Name);
-            return (exist == null);
+        public bool VerifyName(string? Name) => _stacks.Any(x => x.Name == Name);
 
-        }
-
-        public int COUNT => stacks.Count;
+        public int COUNT => _stacks.Count;
         private SqlConnection MakeConnection
         {
             get
             {
-                var conn = new SqlConnection(dataSource.Main);
+                var conn = new SqlConnection(_dataSource.Main);
                 if (conn.State != System.Data.ConnectionState.Open)
                     try
                     {
                         conn.Open();
                     }
-                    catch (Exception e)
+                    catch (SqlException)
                     {
-                        AnsiConsole.WriteLine("Error problem opening connection to the database engine. CHeck to see if it running.");
                         throw;
                     }
                 return conn;
@@ -102,7 +104,7 @@ namespace DataLayer.Controller
 
         public List<CardsPerStackDTO> StackTotalCardView()
         {
-            return MakeConnection.Query<CardsPerStackDTO>(viewSql).ToList();
+            return MakeConnection.Query<CardsPerStackDTO>(_viewSql).ToList();
             
         }
     }
