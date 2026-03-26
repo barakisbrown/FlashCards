@@ -7,6 +7,7 @@ namespace UI;
 
 public class StackMenu : IMenu
 {
+    private readonly List<string> _illegalValues = ["DEFAULT", "QUIT"];
     private readonly CardController _card;
     private readonly StackController _stack;
     private string[] _menu = [];
@@ -90,8 +91,16 @@ public class StackMenu : IMenu
         {
             AnsiConsole.Clear();
             AnsiConsole.WriteLine("Please enter a new Stack Name to be used");
-            AnsiConsole.WriteLine("Stack Names need to be Unique and not called DEFAULT");
+            AnsiConsole.WriteLine("Stack Names need to be Unique and not called DEFAULT/default");
+            AnsiConsole.WriteLine("TYPE QUIT/Quit TO EXIT");
             var name = AnsiConsole.Ask<string>("Stack Name => ");
+            var contains = _illegalValues.FindIndex(value => value.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (contains == -1)
+            {
+                AnsiConsole.WriteLine("Press any key to return to stack menu.");
+                Console.ReadKey(true);
+                break;
+            }
             // CHECK FOR EMPTY STRING / DUPLICATE / DEFAULT
             if (!Stack.AddStack(name))
             {

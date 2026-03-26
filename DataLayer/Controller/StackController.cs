@@ -4,6 +4,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Spectre.Console;
 using System.Data;
+using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 
 namespace DataLayer.Controller
 {    
@@ -20,6 +22,7 @@ namespace DataLayer.Controller
         private const string _editSQL = "UPDATE dbo.Stack SET Name = @NewName WHERE Name = @OldName";
         private const string _deleteSQL = "DELETE FROM dbo.Stack WHERE Name = @Name";
         private const string _viewSql = "SELECT * FROM dbo.CardsPerStack";
+        private const string _verifyName = "SELECT Name FROM dbo.Stack WHERE Name = @Name COLLATE SQL_Latin1_General_CP1_CI_AS";
         private List<Stack> _stacks = new List<Stack>();
 
         public StackController()
@@ -59,7 +62,7 @@ namespace DataLayer.Controller
         
         public bool DeleteStack(string? deleteMe)
         {
-            if (deleteMe.IsNullOrEmpty() || deleteMe == "DEFAULT") return false;
+            if (deleteMe.IsNullOrEmpty()) return false;
             var deleted = MakeConnection.Execute(_deleteSQL, new { Name = deleteMe }) == 1;
             if (deleted)
             {
@@ -81,7 +84,12 @@ namespace DataLayer.Controller
         /// </summary>
         /// <param name="Name">Name to be found</param>
         /// <returns>true if found false if not found</returns>
-        public bool VerifyName(string? Name) => _stacks.Any(x => x.Name == Name);
+        public bool VerifyName(string? Name)
+        {
+            var parameters = new { Name };
+            var conn = MakeConnection.Query<Stack>(_verifyName, parameters).ToList();
+            return conn.Count > 0;
+        }
 
         public int COUNT => _stacks.Count;
         private SqlConnection MakeConnection
