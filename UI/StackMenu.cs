@@ -83,7 +83,8 @@ public class StackMenu : IMenu
     }
     /// <summary>
     /// AddNewTable will ask the user for a new stak to be created.
-    /// Note: Name of the Stacks are UNIQUE and DEFAULT can not be used either since it is used internally.
+    /// Note: Name of the Stacks are UNIQUE. DEFAULT can not be used for a stack since it is used internally
+    /// Note: User enters quit and it will return then back to the exit.
     /// </summary>
     private void AddNewStack()
     {
@@ -91,11 +92,11 @@ public class StackMenu : IMenu
         {
             AnsiConsole.Clear();
             AnsiConsole.WriteLine("Please enter a new Stack Name to be used");
-            AnsiConsole.WriteLine("Stack Names need to be Unique and not called DEFAULT/default");
-            AnsiConsole.WriteLine("TYPE QUIT/Quit TO EXIT");
+            AnsiConsole.WriteLine("Stack Names need to be Unique and can not be called either the following: DEFAULT/default");
+            AnsiConsole.WriteLine("OR TYPE QUIT/Quit TO exit back to to the menu.");
             var name = AnsiConsole.Ask<string>("Stack Name => ");
             var contains = _illegalValues.FindIndex(value => value.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (contains == -1)
+            if (contains != -1)
             {
                 AnsiConsole.WriteLine("Press any key to return to stack menu.");
                 Console.ReadKey(true);
