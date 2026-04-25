@@ -17,7 +17,7 @@ namespace DataLayer.Controller
     public class StackController
     {
         private static readonly DbUser _dataSource = Configuration.GetUserSecretsConnStrings();
-        private const string _selectSql = "SELECT * FROM dbo.Stack";
+        private const string _selectSql = "SELECT * FROM dbo.Stack WHERE Stack.Name != 'DEFAULT'";
         private const string _insertSql = "INSERT INTO dbo.Stack (Name) VALUES (@Name)";
         private const string _editSQL = "UPDATE dbo.Stack SET Name = @NewName WHERE Name = @OldName";
         private const string _deleteSQL = "DELETE FROM dbo.Stack WHERE Name = @Name";

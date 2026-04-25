@@ -1,7 +1,7 @@
 ﻿USE [flashcards]
 GO
 
-/****** Object:  Table [dbo].[Cards]    Script Date: 1/19/2026 5:29:44 PM ******/
+/****** Object:  Table [dbo].[Cards]    Script Date: 4/25/2026 6:28:50 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -9,9 +9,9 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[Cards](
-	[ID] [int] NOT NULL,
-	[Prompt] [nchar](20) NOT NULL,
-	[Answer] [nchar](20) NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Prompt] [nvarchar](20) NOT NULL,
+	[Answer] [nvarchar](20) NOT NULL,
 	[StackID] [int] NOT NULL,
  CONSTRAINT [PK_Cards] PRIMARY KEY CLUSTERED 
 (
@@ -22,6 +22,8 @@ GO
 
 ALTER TABLE [dbo].[Cards]  WITH CHECK ADD  CONSTRAINT [FK_Cards_Stack] FOREIGN KEY([StackID])
 REFERENCES [dbo].[Stack] ([ID])
+ON UPDATE CASCADE
+ON DELETE CASCADE
 GO
 
 ALTER TABLE [dbo].[Cards] CHECK CONSTRAINT [FK_Cards_Stack]
