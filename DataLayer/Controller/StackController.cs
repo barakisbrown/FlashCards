@@ -22,7 +22,6 @@ namespace DataLayer.Controller
         private const string _editSQL = "UPDATE dbo.Stack SET Name = @NewName WHERE Name = @OldName";
         private const string _deleteSQL = "DELETE FROM dbo.Stack WHERE Name = @Name";
         private const string _viewSql = "SELECT * FROM dbo.CardsPerStack";
-        private const string _verifyName = "SELECT Name FROM dbo.Stack WHERE Name = @Name COLLATE SQL_Latin1_General_CP1_CI_AS";
         private List<Stack> _stacks = new List<Stack>();
 
         public StackController()
@@ -30,28 +29,38 @@ namespace DataLayer.Controller
             _stacks = GetAllStacks();
         }
 
-        public bool AddStack(string? Name)
+        public (bool,bool) AddStack(string? Name)
         {
-            if (string.IsNullOrWhiteSpace(Name) || VerifyName(Name))
-                return false;
-
-            var rows = MakeConnection.Execute(_insertSql, new { Name });
-            if (rows == 1)
+            bool added = false;
+            bool unique = false;
+            if (string.IsNullOrEmpty(Name)) return (added,unique);
+            else
             {
-                _stacks = GetAllStacks();
-                return true;
+                try
+                {
+                    var rows = MakeConnection.Execute(_insertSql, new { Name });
+                }
+                catch (SqlException cmd) when (cmd.Number == 2627)
+                {
+                   
+                    added = false;
+                    unique = true;
+                }
+                finally
+                {
+                    added = true;
+                }
             }
 
-            return false;
+            return (added,unique);
         }
 
-        public bool EditStack(string? NameEdit)
+        public bool EditStack(string? OrigName, string NewEdit)
         {
-            if (NameEdit.IsNullOrEmpty()) return false;
+            if (string.IsNullOrEmpty(OrigName) || string.IsNullOrEmpty(NewEdit)) return false;
 
-            if (VerifyName(NameEdit)) return false;
-
-            if (MakeConnection.Execute(_editSQL, new { Name = NameEdit }) == 1)
+            Object[] parm = { new { NewName = NewEdit, OldName = OrigName } };
+            if (MakeConnection.Execute(_editSQL, parm) == 1)
             {
                 _stacks = GetAllStacks();
                 return true;
@@ -62,7 +71,7 @@ namespace DataLayer.Controller
         
         public bool DeleteStack(string? deleteMe)
         {
-            if (deleteMe.IsNullOrEmpty()) return false;
+            if (deleteMe.IsNullOrEmpty() || (deleteMe.ToLower().Contains("default"))) return false;
             var deleted = MakeConnection.Execute(_deleteSQL, new { Name = deleteMe }) == 1;
             if (deleted)
             {
@@ -78,19 +87,7 @@ namespace DataLayer.Controller
             return MakeConnection.Query<Stack>(_selectSql).ToList();
 
         }
-
-        /// <summary>
-        /// Searches the internal list for a specified name
-        /// </summary>
-        /// <param name="Name">Name to be found</param>
-        /// <returns>true if found false if not found</returns>
-        public bool VerifyName(string? Name)
-        {
-            var parameters = new { Name };
-            var conn = MakeConnection.Query<Stack>(_verifyName, parameters).ToList();
-            return conn.Count > 0;
-        }
-
+        
         public int COUNT => _stacks.Count;
         private SqlConnection MakeConnection
         {
