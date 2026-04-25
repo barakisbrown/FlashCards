@@ -43,6 +43,9 @@ public class StackMenu : IMenu
                     Thread.Sleep(2000);
                     continue;
                 case "Rename":
+                    RenameStack();
+                    Thread.Sleep(2000);
+                    continue;
                 case "Delete":
                     AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
                     Thread.Sleep(1000);
@@ -120,6 +123,80 @@ public class StackMenu : IMenu
         }                
     }
 
-    private void RenameStack() { }
+    private void RenameStack() {
+
+        bool changed = false;
+        while(!changed)
+        {
+            
+            var stackList = _stack.GetAllStacks();
+            stackList.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
+
+
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine();
+            AnsiConsole.WriteLine("EDIT STACK NAME");
+            AnsiConsole.WriteLine();
+
+            var prompt = new SelectionPrompt<Stack>()
+                .Title("Select Stack Name to Change")
+                .UseConverter(s => $"[bold]{s.Name}[/]")
+                .AddChoices<Stack>(stackList);
+
+            var choice = AnsiConsole.Prompt(prompt);
+
+            if (choice.ID == 0)
+                break;
+
+            while (true)
+            {
+                var oldName = choice.Name.Trim();
+                AnsiConsole.MarkupInterpolated($"Old Stack Name => {oldName}");
+                var newName = AnsiConsole.Ask<string>("New Stack Name(DEFAULT NOT ALLOWED)=> ");
+
+                if (newName.Contains("DEFAULT"))
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[red]ERROR:Name can not be called DEFAULT. Please try again.[/]");
+                    AnsiConsole.WriteLine();
+                    continue;
+                }
+
+                if (string.Equals(oldName,newName,StringComparison.OrdinalIgnoreCase))
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[red]Error:Name can not be the same. Please try again.[/]");
+                    AnsiConsole.WriteLine();
+                    continue;
+                }
+
+                var confirmString = "Old Stack Name => " + oldName + "New Stack Name => " + newName;
+                
+                AnsiConsole.WriteLine(confirmString);
+                bool confirm = AnsiConsole.Confirm("Is this Correct?");
+                if (confirm)
+                {
+                    // Write to the backend
+                    if (_stack.EditStack(oldName, newName))
+                    {
+                        AnsiConsole.MarkupLineInterpolated($"[bold]Succesfully changed {oldName} TO {newName}[/].");
+                        AnsiConsole.WriteLine("Redirecting back to previous menu.");
+                        changed = true;
+                        break;
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLineInterpolated($"[red]Changed was not completed.[/]");
+                        AnsiConsole.WriteLine("Redirecting back to previous menu.");
+                        changed = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+        }
+    }
     private void DeleteStack() { }
 }
