@@ -7,7 +7,6 @@ namespace UI;
 
 public class StackMenu : IMenu
 {
-    private readonly List<string> _illegalValues = ["DEFAULT", "QUIT"];
     private readonly CardController _card;
     private readonly StackController _stack;
     private string[] _menu = [];
@@ -95,28 +94,32 @@ public class StackMenu : IMenu
             AnsiConsole.WriteLine("Stack Names need to be Unique and can not be called either the following: DEFAULT/default");
             AnsiConsole.WriteLine("OR TYPE QUIT/Quit TO exit back to to the menu.");
             var name = AnsiConsole.Ask<string>("Stack Name => ");
-            var contains = _illegalValues.FindIndex(value => value.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (contains != -1)
+            //  CHECK FOR DUPLICATE ENTRIES SINCE ALL ENTRIES ARE UNIQUE.  Values Default/Quit/Exit can not be used.
+            //  Quit takes the user out of here and back to the menu.
+            if (name.ToLower().Contains("quit") || name.ToLower().Contains("exit"))
             {
-                AnsiConsole.WriteLine("Press any key to return to stack menu.");
+                AnsiConsole.WriteLine("Return back to the Stack Menu.");
+                AnsiConsole.WriteLine("Press any key.");
                 Console.ReadKey(true);
                 break;
             }
-            // CHECK FOR EMPTY STRING / DUPLICATE / DEFAULT
-            if (!Stack.AddStack(name))
+            var (added, unique) = _stack.AddStack(name);
+
+            if (unique)
             {
-                AnsiConsole.MarkupLineInterpolated($"[red]Name enteted must NOT be empty or already exist..Try again[/].");
-                Console.WriteLine("Press any key to try again.");
-                Console.ReadKey(true);
+                AnsiConsole.MarkupLineInterpolated($"[red]Stack Name {name} exist. Please enter another one.[/]");
+                Thread.Sleep(3000);
                 continue;
-            }            
-            else
-            {
-                AnsiConsole.WriteLine($"{name} has been added to the stacks.");
-                Thread.Sleep(2000);
-                break;
             }
-        }
-        
+            if (added)
+            {
+                AnsiConsole.MarkupLineInterpolated($"[bold]Name ${name} has beeen successfully added to the system.[/]");
+                Thread.Sleep(3000);
+                continue;
+            }
+        }                
     }
+
+    private void RenameStack() { }
+    private void DeleteStack() { }
 }
