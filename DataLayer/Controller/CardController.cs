@@ -152,5 +152,19 @@ namespace DataLayer.Controller
         }
 
         public int Count => cards.Count;
+
+        /// <summary>
+        /// Gets the number of cards in the stack identified by the specified key.
+        /// </summary>
+        /// <param name="fkey">The unique identifier of the stack for which to count the cards.</param>
+        /// <returns>The total number of cards in the specified stack.</returns>
+        public int GetNumberCardsInStack(int fkey)
+        {
+            var SQL = "SELECT COUNT(*) FROM Cards WHERE Cards.StackID = fkey";
+            var conn = MakeConnection;
+
+            var total = conn.ExecuteScalar<int>(SQL);
+            return total;
+        }
     }
 }
