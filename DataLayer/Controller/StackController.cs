@@ -111,6 +111,6 @@ namespace DataLayer.Controller
         {
             return MakeConnection.Query<CardsPerStackDTO>(_viewSql).ToList();
             
-        }
+        }       
     }
 }

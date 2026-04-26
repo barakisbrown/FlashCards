@@ -135,7 +135,7 @@ public class StackMenu : IMenu
 
             AnsiConsole.Clear();
             AnsiConsole.WriteLine();
-            AnsiConsole.WriteLine("EDIT STACK NAME");
+            AnsiConsole.WriteLine("RENAME A STACK NAME");
             AnsiConsole.WriteLine();
 
             var prompt = new SelectionPrompt<Stack>()
@@ -198,5 +198,57 @@ public class StackMenu : IMenu
             }
         }
     }
-    private void DeleteStack() { }
+    /// <summary>
+    /// Deletes a selected stack and all associated flashcards after user confirmation.
+    /// </summary>
+    /// <remarks>This operation is irreversible. Deleting a stack will permanently remove all flashcards
+    /// contained within it. The user is prompted to confirm the deletion before any data is removed.</remarks>
+    private void DeleteStack() 
+    {
+        bool done = false;
+        while (done == false)
+        {
+            var stackList = _stack.GetAllStacks();
+            stackList.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
+
+
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine();
+            AnsiConsole.WriteLine("DELETE STACK");
+            AnsiConsole.MarkupLineInterpolated($"[bold]This deletes all flashcards that are stored in this stack also.[/]");
+            AnsiConsole.MarkupLineInterpolated($"[bold]Please be careful. Once done it can not be undone.[/]");
+            AnsiConsole.WriteLine();
+
+            var prompt = new SelectionPrompt<Stack>()
+                .Title("Select Stack Name to Delete")
+                .UseConverter(s => $"[bold]{s.Name}[/]")
+                .AddChoices<Stack>(stackList);
+
+            var choice = AnsiConsole.Prompt(prompt);
+
+            // Fetch Number of Records this stack has assigned to it.
+            int total = _card.GetNumberCardsInStack(choice.ID);
+
+            AnsiConsole.MarkupLineInterpolated($"[red]Deleting Stack Named = {choice.Name} and Delete #{total} flashcards[/]");
+            AnsiConsole.MarkupLineInterpolated($"[red]Please be careful. Once done it can not be undone.[/]");
+
+            bool confirm = AnsiConsole.Confirm("Are you sure?");
+
+            if (confirm)
+            {
+                if (Stack.DeleteStack(choice.Name))
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[red]Stack {choice.Name} and #{total} flashcards have been deleted.[/]");
+                    done = true;
+                    break;
+                }                
+            }
+            else
+            {
+                AnsiConsole.MarkupLineInterpolated($"[red]Aborting. No changes has been made.[/]");
+                Thread.Sleep(3000);
+                continue;
+            }
+        }
+    }
 }
