@@ -14,6 +14,7 @@ namespace DataLayer.Controller
         private readonly string updateSQL = "Update dbo.cards SET Prompt = @Prompt, Answer = @Answer, StackID = @StackID" +
                 " WHERE dbo.cards.ID = @ID";
         private readonly string deleteSQL = "DELETE FROM dbo.Cards WHERE dbo.Cards.ID = @ID";
+        private readonly string cardsPerStackSQL = "SELECT COUNT(*) FROM Cards WHERE Cards.StackID = @fkey";
         // FIX CONNECTION STRING ISSUES
         private List<Card> cards = [];
         private bool synced = false;
@@ -27,7 +28,7 @@ namespace DataLayer.Controller
             // CHECK IF EITHER STRING IS NULL OR EMPTY
             if (Prompt.IsNullOrEmpty() || Answer.IsNullOrEmpty())
                 return false;            
-            var conn = MakeConnection;
+            using var conn = MakeConnection;
             object[] param = { new { Prompt, Answer, CardID } };
             bool success = conn.Execute(insertSQL, param) == 1;
             if (success)
@@ -76,8 +77,9 @@ namespace DataLayer.Controller
                 success = true;
             }
             // DATABASE
+            using var conn = MakeConnection;
             Object[] param = { new{editedCard.Prompt, editedCard.Answer, editedCard.StackID, editedCard.ID } };
-            bool update = MakeConnection.Execute(updateSQL, param) == 1;
+            bool update = conn.Execute(updateSQL, param) == 1;
             if (update && success)
             {
                 SYNCED = true;
@@ -90,8 +92,9 @@ namespace DataLayer.Controller
         public bool DeleteCard(Card deleteMe) 
         {
             bool retValue;
-            Object[] param = { new {deleteMe.ID } };
-            bool deleted = MakeConnection.Execute(deleteSQL, param) == 1;
+            using var conn = MakeConnection;
+            Object[] param = [new {deleteMe.ID }];
+            bool deleted = conn.Execute(deleteSQL, param) == 1;
             if (deleted)
             {
                 LoadAllRecords();
@@ -110,7 +113,7 @@ namespace DataLayer.Controller
 
         private void LoadAllRecords()
         {            
-            var conn = MakeConnection;
+            using var conn = MakeConnection;
             cards = conn.Query<Card>(selectAllSql).ToList();
             SYNCED = true;
         }
@@ -160,10 +163,10 @@ namespace DataLayer.Controller
         /// <returns>The total number of cards in the specified stack.</returns>
         public int GetNumberCardsInStack(int fkey)
         {
-            var SQL = "SELECT COUNT(*) FROM Cards WHERE Cards.StackID = fkey";
-            var conn = MakeConnection;
+            using var conn = MakeConnection;
+            Object parm = new { fkey };
 
-            var total = conn.ExecuteScalar<int>(SQL);
+            var total = conn.ExecuteScalar<int>(cardsPerStackSQL, parm);
             return total;
         }
     }
