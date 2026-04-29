@@ -47,7 +47,7 @@ public class StackMenu : IMenu
                     Thread.Sleep(2000);
                     continue;
                 case "Delete":
-                    AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
+                    DeleteStack();
                     Thread.Sleep(1000);
                     continue;
                 case "View":                      
@@ -226,11 +226,17 @@ public class StackMenu : IMenu
 
             var choice = AnsiConsole.Prompt(prompt);
 
+            if (choice.ID == 0)
+            {
+                done = true;
+                continue;
+            }
+
             // Fetch Number of Records this stack has assigned to it.
             int total = _card.GetNumberCardsInStack(choice.ID);
 
-            AnsiConsole.MarkupLineInterpolated($"[red]Deleting Stack Named = {choice.Name} and Delete #{total} flashcards[/]");
-            AnsiConsole.MarkupLineInterpolated($"[red]Please be careful. Once done it can not be undone.[/]");
+            AnsiConsole.MarkupLineInterpolated($"[red]Deleting Stack Named = {choice.Name} and #{total} flashcards[/]");
+            AnsiConsole.MarkupLineInterpolated($"[red]Please be careful. This is permanent.[/]");
 
             bool confirm = AnsiConsole.Confirm("Are you sure?");
 
@@ -238,7 +244,7 @@ public class StackMenu : IMenu
             {
                 if (Stack.DeleteStack(choice.Name))
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[red]Stack {choice.Name} and #{total} flashcards have been deleted.[/]");
+                    AnsiConsole.MarkupLineInterpolated($"[red]Stack {choice.Name} and #{total} flashcards have been deleted from the system.[/]");
                     done = true;
                     break;
                 }                
