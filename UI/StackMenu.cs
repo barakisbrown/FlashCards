@@ -62,7 +62,7 @@ public class StackMenu : IMenu
     }
     public void LoadMenu(string menuName)
     {
-        var path = AppDomain.CurrentDomain.BaseDirectory + "\\MENUS\\";         
+        var path = AppDomain.CurrentDomain.BaseDirectory + "//MENUS//";         
 
         _menu = File.ReadAllLines(Path.Combine(path, menuName));
     }
