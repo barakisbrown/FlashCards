@@ -40,6 +40,8 @@ public class CardMenu : IMenu
                     Console.ReadKey(true);
                     continue;
                 case "Add"  :
+                    AddFlashCard();
+                    continue;
                 case "Edit" :
                 case "Delete" : 
                     AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
@@ -71,5 +73,94 @@ public class CardMenu : IMenu
         }
 
         AnsiConsole.Write(table);
+    }
+
+    /// <summary>
+    /// Allows the user to enter a new FlashCard into the system. Stack defaults to DEFAULT.
+    /// 
+    /// </summary>
+    public void AddFlashCard()
+    {
+        var stackList = _stackController.GetAllStacks();
+
+        while (true)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine("ADDING NEW FLASHCARDS");
+            AnsiConsole.WriteLine();
+            AnsiConsole.WriteLine("To create a new FlashCard, you will need to enter a prompt followed by the answer.");
+            AnsiConsole.WriteLine("You can assign to a Stack here unless you want it to be attached the DEFAULT stack.");
+            AnsiConsole.WriteLine("You can change the stackname of the flashcard later if needed.");
+
+            var prompt = AnsiConsole.Ask<string>("Prompt => ");
+            var answer = AnsiConsole.Ask<string>("Answer => ");
+            var confirm = AnsiConsole.Confirm("Do you wish to assign this to the default stack of flashcards?  (Y/N) ");
+            // DOH .. Need to confirm if prompt and answer is correct
+            Card newCard = new() { Prompt = prompt, Answer = answer, StackID = 1 };
+            if (!confirm)
+            {
+                AnsiConsole.WriteLine();
+
+                var stack = new SelectionPrompt<Stack>()
+                 .Title("Select Stack Name")
+                 .UseConverter(s => $"[bold]{s.Name}[/]")
+                 .AddChoices<Stack>(stackList);
+
+                var choice = AnsiConsole.Prompt(stack);
+
+                int id = choice.ID;
+                newCard.StackID = id;
+            }
+            // Add Card to Database
+            (bool success, bool another) = addCard(newCard);
+            if (success && another)
+            {
+                if (success == true && another == true)
+                    continue;
+                else
+                    break;
+            }
+            else
+            {
+                break;
+            }
+
+
+        }
+    }
+    /// <summary>
+    /// Attempts to add a new flashcard to the system and prompts the user to add another card if the operation
+    /// succeeds.
+    /// </summary>
+    /// <remarks>If the card is added successfully, the method prompts the user to confirm whether to add
+    /// another card. If the addition fails, an error message is displayed and the method returns (<see
+    /// langword="false"/>, <see langword="false"/>).</remarks>
+    /// <param name="newCard">The flashcard to add to the system. Cannot be null.</param>
+    /// <returns>A tuple indicating the result of the operation. The first value is <see langword="true"/> if the card was added
+    /// successfully; otherwise, <see langword="false"/>. The second value is <see langword="true"/> if the user chooses
+    /// to add another card; otherwise, <see langword="false"/>.</returns>
+    private (bool, bool) addCard(Card newCard)
+    {
+        if (_cardController.AddCard(newCard))
+        {
+            AnsiConsole.WriteLine("Congrats .. Successfully added a new flashcard into the system to the default stack name.");
+            var another = AnsiConsole.Confirm("Do you want to add an another FlashCard? (Y/N) ");
+            if (another)
+            {
+                return (true, true);
+            }
+            else
+            {
+                AnsiConsole.WriteLine("Redirecting to the Card Menu.");
+                Thread.Sleep(3000);
+                return (true, false);
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLineInterpolated($"[red]Error Adding a new FlashCard. Check with Administrator.[/]");
+            Thread.Sleep(4000);
+            return (false, false);
+        }
     }
 }
