@@ -47,19 +47,8 @@ namespace DataLayer.Controller
             // CHECK IF EITHER STRING IS NULL OR EMPTY
             if (card.Prompt.IsNullOrEmpty() || card.Answer.IsNullOrEmpty())
                 return false;
-            
-            var conn = MakeConnection;
-            object[] parm = { new { card.Prompt, card.Answer, card.StackID } };
-            bool success = conn.Execute(insertSQL, parm) == 1;
-            if (success)
-            {
-                SYNCED = false;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+
+            return AddCard(card.Prompt, card.Answer, card.StackID);
         }
 
         public bool EditCard(Card editedCard)
