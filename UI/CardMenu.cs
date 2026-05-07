@@ -16,9 +16,9 @@ public class CardMenu : IMenu
         _stackController = stackController;
         LoadMenu(IMenu.CardMenuTitle);
     }
-    
-    public CardController Card { get => _cardController; init  => _cardController = value; }
-    public StackController Stack { get => _stackController; init   => _stackController = value; }
+
+    public CardController Card { get => _cardController; init => _cardController = value; }
+    public StackController Stack { get => _stackController; init => _stackController = value; }
     public void DisplayMenu()
     {
         while (true)
@@ -34,19 +34,19 @@ public class CardMenu : IMenu
 
             switch (choice)
             {
-                case "View" :
+                case "View":
                     ListAllCards();
                     AnsiConsole.WriteLine("Press any key to return to menu.");
                     Console.ReadKey(true);
                     continue;
-                case "Add"  :
+                case "Add":
                     AddFlashCard();
                     continue;
-                case "Edit" :
-                case "Delete" : 
+                case "Edit":
+                case "Delete":
                     AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
                     Thread.Sleep(1000); continue;
-                case "Exit" : break;
+                case "Exit": break;
             }
             break;
         }
@@ -100,24 +100,16 @@ public class CardMenu : IMenu
                 break;
             }
             var answer = AnsiConsole.Ask<string>("Answer => ");
-            var confirm = AnsiConsole.Confirm("Do you wish to assign this to the default stack of flashcards?  (Y/N) ");
             // DOH - Need to confirm if prompt and answer is correct
-            Card newCard = new Card { Prompt = prompt, Answer = answer, StackID = 1 };
-            if (!confirm)
-            {
-                AnsiConsole.WriteLine();
+            Card newCard = new Card { Prompt = prompt, Answer = answer, StackID = 0 };
+            // ASSIGN IT TO THE PROPER STACK EVEN DEFAULT
+            var stack = new SelectionPrompt<Stack>()
+           .Title("Select Stack Name to Add Card")
+           .UseConverter(s => $"[bold]{s.Name}[/]")
+           .AddChoices<Stack>(stackList);
 
-                var stack = new SelectionPrompt<Stack>()
-                 .Title("Select Stack Name")
-                 .UseConverter(s => $"[bold]{s.Name}[/]")
-                 .AddChoices<Stack>(stackList);
-
-                var choice = AnsiConsole.Prompt(stack);
-
-                int id = choice.ID;
-                newCard.StackID = id;
-            }
-            // Add Card to Database
+            var selStack = AnsiConsole.Prompt(stack);
+            newCard.StackID = selStack.ID;
             var (success, another) = AddCard(newCard);
             if (success && another)
             {
