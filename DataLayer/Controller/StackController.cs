@@ -16,7 +16,7 @@ namespace DataLayer.Controller
     /// </summary>
     public class StackController
     {
-        private static readonly DbUser _dataSource = Configuration.GetUserSecretsConnStrings();
+        private readonly static DbUser _dataSource = Configuration.GetUserSecretsConnStrings();
         private const string _selectSql = "SELECT * FROM dbo.Stack WHERE Stack.Name != 'DEFAULT'";
         private const string _insertSql = "INSERT INTO dbo.Stack (Name) VALUES (@Name)";
         private const string _editSQL = "UPDATE dbo.Stack SET Name = @NewName WHERE Name = @OldName";
@@ -91,6 +91,8 @@ namespace DataLayer.Controller
             return conn.Query<Stack>(_selectSql).ToList();
 
         }
+        
+        public string GetStackNameById(int id) => _stacks.First( x=> x.ID == id).Name;
         
         public int COUNT => _stacks.Count;
         private SqlConnection MakeConnection

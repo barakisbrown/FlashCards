@@ -8,32 +8,30 @@ namespace DataLayer.Controller
 {
     public class CardController
     {
-        private static readonly DbUser dataSource = Configuration.GetUserSecretsConnStrings();
-        private readonly string selectAllSql = "SELECT * FROM dbo.Cards";
-        private readonly string insertSQL = "INSERT INTO dbo.Cards(Prompt, Answer, StackID) VALUES(@PROMPT, @ANSWER, @CARDID)";
-        private readonly string updateSQL = "Update dbo.cards SET Prompt = @Prompt, Answer = @Answer, StackID = @StackID" +
-                " WHERE dbo.cards.ID = @ID";
-        private readonly string deleteSQL = "DELETE FROM dbo.Cards WHERE dbo.Cards.ID = @ID";
-        private readonly string cardsPerStackSQL = "SELECT COUNT(*) FROM Cards WHERE Cards.StackID = @fkey";
+        private readonly static DbUser DataSource = Configuration.GetUserSecretsConnStrings();
+        private const string SelectAllSql = "SELECT * FROM dbo.Cards";
+        private const string InsertSql = "INSERT INTO dbo.Cards(Prompt, Answer, StackID) VALUES(@PROMPT, @ANSWER, @CARDID)";
+        private const string UpdateSql = "Update dbo.cards SET Prompt = @Prompt, Answer = @Answer, StackID = @StackID" + " WHERE dbo.cards.ID = @ID";
+        private const string DeleteSql = "DELETE FROM dbo.Cards WHERE dbo.Cards.ID = @ID";
+        private const string CardsPerStackSql = "SELECT COUNT(*) FROM Cards WHERE Cards.StackID = @fkey";
         // FIX CONNECTION STRING ISSUES
-        private List<Card> cards = [];
-        private bool synced = false;
+        private List<Card> _cards = [];
         public CardController()
         {
             LoadAllRecords();
         }
 
-        public bool AddCard(string? Prompt,string? Answer,int? CardID = 1)
+        public bool AddCard(string? prompt,string? answer,int? cardId = 1)
         {
             // CHECK IF EITHER STRING IS NULL OR EMPTY
-            if (Prompt.IsNullOrEmpty() || Answer.IsNullOrEmpty())
+            if (prompt.IsNullOrEmpty() || answer.IsNullOrEmpty())
                 return false;            
             using var conn = MakeConnection;
-            object[] param = { new { Prompt, Answer, CardID } };
-            bool success = conn.Execute(insertSQL, param) == 1;
+            object[] param = { new { prompt, answer, cardId } };
+            var success = conn.Execute(InsertSql, param) == 1;
             if (success)
             {
-                synced = false;
+                Synced = false;
                 return true;
             }
             else
@@ -53,9 +51,9 @@ namespace DataLayer.Controller
 
         public bool EditCard(Card editedCard)
         {
-            bool success = false;
+            var success = false;
             // INTERNAL LIST
-            var card = cards.FirstOrDefault(x => x.ID == editedCard.ID);
+            var card = _cards.FirstOrDefault(x => x.ID == editedCard.ID);
             if (card == null)
                 return success;
             else
@@ -67,11 +65,11 @@ namespace DataLayer.Controller
             }
             // DATABASE
             using var conn = MakeConnection;
-            Object[] param = { new{editedCard.Prompt, editedCard.Answer, editedCard.StackID, editedCard.ID } };
-            bool update = conn.Execute(updateSQL, param) == 1;
+            object[] param = { new{editedCard.Prompt, editedCard.Answer, editedCard.StackID, editedCard.ID } };
+            var update = conn.Execute(UpdateSql, param) == 1;
             if (update && success)
             {
-                SYNCED = true;
+                Synced = true;
                 return true;
             }
             else
@@ -82,8 +80,8 @@ namespace DataLayer.Controller
         {
             bool retValue;
             using var conn = MakeConnection;
-            Object[] param = [new {deleteMe.ID }];
-            bool deleted = conn.Execute(deleteSQL, param) == 1;
+            object[] param = [new {deleteMe.ID }];
+            var deleted = conn.Execute(DeleteSql, param) == 1;
             if (deleted)
             {
                 LoadAllRecords();
@@ -96,39 +94,39 @@ namespace DataLayer.Controller
             
         }
 
-        public Card? GetCardByID(int ID) => cards.FirstOrDefault(x => x.ID == ID);
-        public List<Card> GetAllCardsByStack(int stackID) => cards.Where(x => x.StackID == stackID).ToList();
+        public Card? GetCardById(int ID) => _cards.FirstOrDefault(x => x.ID == ID);
+        public List<Card> GetAllCardsByStack(int stackId) => _cards.Where(x => x.StackID == stackId).ToList();
 
 
         private void LoadAllRecords()
         {            
             using var conn = MakeConnection;
-            cards = conn.Query<Card>(selectAllSql).ToList();
-            SYNCED = true;
+            _cards = conn.Query<Card>(SelectAllSql).ToList();
+            Synced = true;
         }
 
         public List<Card> GetAllCards()
         {
             List<Card> tmpCards;
-            if (!SYNCED)
+            if (!Synced)
             {
                 LoadAllRecords();
-                tmpCards = cards;
-                SYNCED = true;
+                tmpCards = _cards;
+                Synced = true;
             }
             else
-                tmpCards = cards;
+                tmpCards = _cards;
             
             return tmpCards;
         }
 
-        private bool SYNCED { get => synced; set => synced = value; }
+        private bool Synced { get; set; } = false;
 
         private SqlConnection MakeConnection
         {
             get
             {
-                var conn = new SqlConnection(dataSource.Main);
+                var conn = new SqlConnection(DataSource.Main);
                 if (conn.State != System.Data.ConnectionState.Open)
                     try
                     {
@@ -143,7 +141,7 @@ namespace DataLayer.Controller
             }
         }
 
-        public int Count => cards.Count;
+        public int Count => _cards.Count;
 
         /// <summary>
         /// Gets the number of cards in the stack identified by the specified key.
@@ -155,7 +153,7 @@ namespace DataLayer.Controller
             using var conn = MakeConnection;
             Object parm = new { fkey };
 
-            var total = conn.ExecuteScalar<int>(cardsPerStackSQL, parm);
+            var total = conn.ExecuteScalar<int>(CardsPerStackSql, parm);
             return total;
         }
     }

@@ -59,7 +59,7 @@ public class CardMenu : IMenu
         _menu = File.ReadAllLines(Path.Combine(path, menuName));
     }
 
-    public void ListAllCards()
+    private void ListAllCards()
     {
         var cards = Card.GetAllCards();
         var stacks = Stack.GetAllStacks();
@@ -68,7 +68,7 @@ public class CardMenu : IMenu
         var table = new Table().AddColumns("Prompt", "Answer", "Stack");
         foreach (var c in cards)
         {
-            var stackName = stackLookup.ContainsKey(c.StackID) ? stackLookup[c.StackID] : "DEFAULT";
+            var stackName = stackLookup.GetValueOrDefault(c.StackID, "DEFAULT");
             table.AddRow(c.Prompt ?? string.Empty, c.Answer ?? string.Empty, stackName);
         }
 
@@ -79,7 +79,7 @@ public class CardMenu : IMenu
     /// Allows the user to enter a new FlashCard into the system. Stack defaults to DEFAULT.
     /// 
     /// </summary>
-    public void AddFlashCard()
+    private void AddFlashCard()
     {
         var stackList = _stackController.GetAllStacks();
 
@@ -90,13 +90,13 @@ public class CardMenu : IMenu
             AnsiConsole.WriteLine();
             AnsiConsole.WriteLine("To create a new FlashCard, you will need to enter a prompt followed by the answer.");
             AnsiConsole.WriteLine("You can assign to a Stack here unless you want it to be attached the DEFAULT stack.");
-            AnsiConsole.WriteLine("You can change the stackname of the flashcard later if needed.");
+            AnsiConsole.WriteLine("You can change the stacks name of the flashcard later if needed.");
 
             var prompt = AnsiConsole.Ask<string>("Prompt => ");
             var answer = AnsiConsole.Ask<string>("Answer => ");
             var confirm = AnsiConsole.Confirm("Do you wish to assign this to the default stack of flashcards?  (Y/N) ");
-            // DOH .. Need to confirm if prompt and answer is correct
-            Card newCard = new() { Prompt = prompt, Answer = answer, StackID = 1 };
+            // DOH - Need to confirm if prompt and answer is correct
+            Card newCard = new Card { Prompt = prompt, Answer = answer, StackID = 1 };
             if (!confirm)
             {
                 AnsiConsole.WriteLine();
@@ -112,7 +112,7 @@ public class CardMenu : IMenu
                 newCard.StackID = id;
             }
             // Add Card to Database
-            (bool success, bool another) = addCard(newCard);
+            var (success, another) = AddCard(newCard);
             if (success && another)
             {
                 if (success == true && another == true)
@@ -124,8 +124,6 @@ public class CardMenu : IMenu
             {
                 break;
             }
-
-
         }
     }
     /// <summary>
@@ -139,11 +137,12 @@ public class CardMenu : IMenu
     /// <returns>A tuple indicating the result of the operation. The first value is <see langword="true"/> if the card was added
     /// successfully; otherwise, <see langword="false"/>. The second value is <see langword="true"/> if the user chooses
     /// to add another card; otherwise, <see langword="false"/>.</returns>
-    private (bool, bool) addCard(Card newCard)
+    private (bool, bool) AddCard(Card newCard)
     {
         if (_cardController.AddCard(newCard))
         {
-            AnsiConsole.WriteLine("Congrats .. Successfully added a new flashcard into the system to the default stack name.");
+            var name = _stackController.GetStackNameById(newCard.ID);
+            AnsiConsole.WriteLine($"Congrats .. Successfully added a new flashcard into the system to the {name} stack.");
             var another = AnsiConsole.Confirm("Do you want to add an another FlashCard? (Y/N) ");
             if (another)
             {
