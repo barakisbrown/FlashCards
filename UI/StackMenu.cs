@@ -128,7 +128,7 @@ public class StackMenu : IMenu
         while(!changed)
         {
 
-            var stackList = GetTempStacks();
+            var stackList = _stack.GetStackForDisplay();
 
             AnsiConsole.Clear();
             AnsiConsole.WriteLine();
@@ -205,7 +205,7 @@ public class StackMenu : IMenu
         bool done = false;
         while (done == false)
         {
-            var stackList = GetTempStacks();
+            var stackList = _stack.GetStackForDisplay();
             
             AnsiConsole.Clear();
             AnsiConsole.WriteLine();
@@ -251,13 +251,5 @@ public class StackMenu : IMenu
                 continue;
             }
         }       
-    }
-    private List<Stack> GetTempStacks()
-    {
-        var list = Stack.GetAllStacks();
-        list.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
-        var item = list.Find(x => x.Name.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase)).ID;
-        list.RemoveAt(item);
-        return list;
-    }
+    }  
 }
