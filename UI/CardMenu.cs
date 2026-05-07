@@ -92,7 +92,13 @@ public class CardMenu : IMenu
             AnsiConsole.WriteLine("You can assign to a Stack here unless you want it to be attached the DEFAULT stack.");
             AnsiConsole.WriteLine("You can change the stacks name of the flashcard later if needed.");
 
-            var prompt = AnsiConsole.Ask<string>("Prompt => ");
+            var cancel = new TextPrompt<string>("Prompt => (HIT RETURN TO EXIT)").AllowEmpty();
+
+            var prompt = AnsiConsole.Prompt(cancel);
+            if (string.IsNullOrEmpty(prompt))
+            {
+                break;
+            }
             var answer = AnsiConsole.Ask<string>("Answer => ");
             var confirm = AnsiConsole.Confirm("Do you wish to assign this to the default stack of flashcards?  (Y/N) ");
             // DOH - Need to confirm if prompt and answer is correct
@@ -141,7 +147,7 @@ public class CardMenu : IMenu
     {
         if (_cardController.AddCard(newCard))
         {
-            var name = _stackController.GetStackNameById(newCard.ID);
+            var name = _stackController.GetStackNameById(newCard.StackID);
             AnsiConsole.WriteLine($"Congrats .. Successfully added a new flashcard into the system to the {name} stack.");
             var another = AnsiConsole.Confirm("Do you want to add an another FlashCard? (Y/N) ");
             if (another)
