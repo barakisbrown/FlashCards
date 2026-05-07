@@ -1,6 +1,5 @@
 using DataLayer.Controller;
 using DataLayer.Models;
-using Microsoft.IdentityModel.Tokens;
 using Spectre.Console;
 
 namespace UI;
@@ -78,7 +77,7 @@ public class StackMenu : IMenu
 
         foreach(var cps in cardPerStacks)
         {
-            table.AddRow(cps.Name,cps.NumCards.ToString());
+            table.AddRow(cps.Name,cps.TotalCards.ToString());
         }
 
         AnsiConsole.Write(table);
@@ -128,10 +127,8 @@ public class StackMenu : IMenu
         bool changed = false;
         while(!changed)
         {
-            
-            var stackList = _stack.GetAllStacks();
-            stackList.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
 
+            var stackList = GetTempStacks();
 
             AnsiConsole.Clear();
             AnsiConsole.WriteLine();
@@ -208,10 +205,8 @@ public class StackMenu : IMenu
         bool done = false;
         while (done == false)
         {
-            var stackList = _stack.GetAllStacks();
-            stackList.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
-
-
+            var stackList = GetTempStacks();
+            
             AnsiConsole.Clear();
             AnsiConsole.WriteLine();
             AnsiConsole.WriteLine("DELETE STACK");
@@ -255,6 +250,14 @@ public class StackMenu : IMenu
                 Thread.Sleep(3000);
                 continue;
             }
-        }
+        }       
+    }
+    private List<Stack> GetTempStacks()
+    {
+        var list = Stack.GetAllStacks();
+        list.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
+        var item = list.Find(x => x.Name.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase)).ID;
+        list.RemoveAt(item);
+        return list;
     }
 }
