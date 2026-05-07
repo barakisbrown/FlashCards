@@ -113,12 +113,30 @@ namespace DataLayer.Controller
                 return conn;
             }
         }
-
+        /// <summary>
+        /// Retrieves a list of card stack totals as data transfer objects. 
+        /// </summary>
+        /// <returns>A list of <see cref="CardsPerStackDTO"/> objects representing the total cards per stack. The list will be
+        /// empty if no stacks are found.</returns>
         public List<CardsPerStackDTO> StackTotalCardView()
         {
             using var conn = MakeConnection;
             return conn.Query<CardsPerStackDTO>(_viewSql).ToList();
             
-        }       
+        }
+        /// <summary>
+        /// Retrieves a list of stacks for display, including a special entry for returning to the menu and excluding
+        /// the default stack.
+        /// </summary>
+        /// <returns>A list of stacks to be displayed. The list includes a 'Return to Menu. No Change Made.' entry and excludes
+        /// the stack named 'DEFAULT'.</returns>
+        public List<Stack> GetStackForDisplay()
+        {
+            var list = GetAllStacks();
+            list.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
+            var item = list.Find(x => x.Name.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase)).ID;
+            list.RemoveAt(item);
+            return list;
+        }
     }
 }
