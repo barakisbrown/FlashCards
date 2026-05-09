@@ -137,6 +137,20 @@ namespace DataLayer.Controller
             var item = list.Find(x => x.Name.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase)).ID;
             list.RemoveAt(item);
             return list;
-        }        
+        }
+        
+        /// <summary>
+        /// Retrieves a list of available stacks, including an option to return to the menu without making changes.
+        /// </summary>
+        /// <remarks>The additional entry allows callers to present a 'cancel' or 'no action' option in
+        /// user interfaces that require stack selection.</remarks>
+        /// <returns>A list of <see cref="Stack"/> objects representing all available stacks. The list always includes an
+        /// additional entry labeled "Return to Menu. No Change Made." as the last item.</returns>
+        public List<Stack> GetStackNames()
+        {
+            var list = GetAllStacks();
+            list.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
+            return list;
+        }
     }
 }
