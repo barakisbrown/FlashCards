@@ -43,6 +43,8 @@ public class CardMenu : IMenu
                     AddFlashCard();
                     continue;
                 case "Edit":
+                    EditFlashCards();
+                    continue;
                 case "Delete":
                     AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
                     Thread.Sleep(1000); continue;
@@ -134,6 +136,41 @@ public class CardMenu : IMenu
             }
         }
     }
+
+    private void EditFlashCards()
+    {
+        while(true)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine("EDITING FLASHCARD INFORMATION");
+            // DISPLAY STACK TO GET FLASHCARD
+            // DISPLAY LIST OF CARDS FROM STACK TO EDIT
+            // ASK USER WHICH OF THE PARTS TO EDIT
+            var stackList = _stackController.GetStackNames();
+            AnsiConsole.WriteLine("Please Select Stack of Cards to find the Card that needs to be modified.");
+            var choice = AnsiConsole.Prompt(GetStackNamePrompt(stackList));
+            if (choice.ID == 0)
+            {
+                AnsiConsole.WriteLine("Thank you. No Changed will be made. Exiting to Menu.");
+                Thread.Sleep(4000);
+                break;
+            }
+            AnsiConsole.WriteLine($"Select FlashCard from {choice.Name} stack to modify");
+            var modify = AnsiConsole.Prompt(GetCardNamesPrompt(choice.ID));
+            AnsiConsole.WriteLine("Card being Modified");
+            AnsiConsole.WriteLine($"Prompt => {modify.Prompt}");
+            AnsiConsole.WriteLine($"Answer => {modify.Answer}");
+            AnsiConsole.WriteLine($"StackName = {choice.Name}");
+            // Will Add More
+            AnsiConsole.WriteLine();
+            AnsiConsole.Write("Press Any Key to Exit.");
+            Console.ReadKey(true);
+            break;
+        }
+    }
+
+
+
     /// <summary>
     /// Attempts to add a new flashcard to the system and prompts the user to add another card if the operation
     /// succeeds.
@@ -171,5 +208,30 @@ public class CardMenu : IMenu
             Thread.Sleep(4000);
             return (false, false);
         }
+    }
+
+    private SelectionPrompt<Stack> GetStackNamePrompt(List<Stack> stackList)
+    {
+        var prompt = new SelectionPrompt<Stack>()
+            .Title("Select Stack Name to browse Flash Cards")
+            .UseConverter(s => $"[bold]{s.Name}[/]")
+            .AddChoices<Stack>(stackList);
+        return prompt;
+    }
+
+    private SelectionPrompt<Card> GetCardNamesPrompt(int stackID)
+    {
+        var list = _cardController.GetAllCardsByStack(stackID);
+        list.Add(new DataLayer.Models.Card
+        {
+            Answer = "CANCEL",
+            Prompt = "EDIT"
+        });
+        
+        var prompt = new SelectionPrompt<Card>()
+            .Title("Select Card to Edit")
+            .UseConverter(s => $"{s.Prompt,-15} {s.Answer}")
+            .AddChoices<Card>(list);
+        return prompt;
     }
 }
