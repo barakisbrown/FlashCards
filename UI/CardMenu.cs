@@ -147,7 +147,8 @@ public class CardMenu : IMenu
     /// to add another card; otherwise, <see langword="false"/>.</returns>
     private (bool, bool) AddCard(Card newCard)
     {
-        if (_cardController.AddCard(newCard))
+        var (success,message) = _cardController.AddCard(newCard);
+        if (success)
         {
             var name = _stackController.GetStackNameById(newCard.StackID);
             AnsiConsole.WriteLine($"Congrats .. Successfully added a new flashcard into the system to the {name} stack.");
@@ -166,6 +167,7 @@ public class CardMenu : IMenu
         else
         {
             AnsiConsole.MarkupLineInterpolated($"[red]Error Adding a new FlashCard. Check with Administrator.[/]");
+            AnsiConsole.MarkupLineInterpolated($"Exception Used => {message}");
             Thread.Sleep(4000);
             return (false, false);
         }
