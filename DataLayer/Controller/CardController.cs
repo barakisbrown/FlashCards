@@ -156,5 +156,12 @@ namespace DataLayer.Controller
             var total = conn.ExecuteScalar<int>(CardsPerStackSql, parm);
             return total;
         }
+
+        public bool CardExist(Card selCard)
+        {
+            var list = GetAllCardsByStack(selCard.StackID).Any(x => x.Prompt.Equals(selCard.Prompt) && x.Answer.Equals(selCard.Answer));
+            return list;
+            
+        }
     }
 }

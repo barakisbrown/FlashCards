@@ -110,6 +110,16 @@ public class CardMenu : IMenu
 
             var selStack = AnsiConsole.Prompt(stack);
             newCard.StackID = selStack.ID;
+            // CHECK FOR DUPLICATE CARD FROM THE SAME STACK AND ASK THE USER IF HE WANTS 
+            // TO STILL KEEP IT OR DISCARD
+            if (Card.CardExist(newCard))
+            {
+                var confirmCard = AnsiConsole.Confirm("This card already exist in this stack. Do you still want to add it anyway?");
+                if (!confirmCard)
+                    continue;
+            }
+
+
             var (success, another) = AddCard(newCard);
             if (success && another)
             {
