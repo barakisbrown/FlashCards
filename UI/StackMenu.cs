@@ -134,13 +134,8 @@ public class StackMenu : IMenu
             AnsiConsole.WriteLine();
             AnsiConsole.WriteLine("RENAME A STACK NAME");
             AnsiConsole.WriteLine();
-
-            var prompt = new SelectionPrompt<Stack>()
-                .Title("Select Stack Name to Change")
-                .UseConverter(s => $"[bold]{s.Name}[/]")
-                .AddChoices<Stack>(stackList);
-
-            var choice = AnsiConsole.Prompt(prompt);
+            
+            var choice  = AnsiConsole.Prompt(MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO CHANGE"));
 
             if (choice.ID == 0)
                 break;
@@ -213,13 +208,8 @@ public class StackMenu : IMenu
             AnsiConsole.MarkupLineInterpolated($"[bold]This deletes all flashcards that are stored in this stack also.[/]");
             AnsiConsole.MarkupLineInterpolated($"[bold]Please be careful. Once done it can not be undone.[/]");
             AnsiConsole.WriteLine();
-
-            var prompt = new SelectionPrompt<Stack>()
-                .Title("Select Stack Name to Delete")
-                .UseConverter(s => $"[bold]{s.Name}[/]")
-                .AddChoices<Stack>(stackList);
-
-            var choice = AnsiConsole.Prompt(prompt);
+        
+            var choice = AnsiConsole.Prompt(MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO DELETE"));
 
             if (choice.ID == 0)
             {
