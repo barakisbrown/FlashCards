@@ -148,25 +148,65 @@ public class CardMenu : IMenu
             // ASK USER WHICH OF THE PARTS TO EDIT
             var stackList = _stackController.GetStackNames();
             AnsiConsole.WriteLine("Please Select Stack of Cards to find the Card that needs to be modified.");
-            var choice = AnsiConsole.Prompt(GetStackNamePrompt(stackList));
+            AnsiConsole.WriteLine();
+            var choice = AnsiConsole.Prompt(MenuHelper.GetStackNamePrompt(stackList));
             if (choice.ID == 0)
             {
                 AnsiConsole.WriteLine("Thank you. No Changed will be made. Exiting to Menu.");
                 Thread.Sleep(4000);
                 break;
             }
+
+            AnsiConsole.WriteLine();
             AnsiConsole.WriteLine($"Select FlashCard from {choice.Name} stack to modify");
-            var modify = AnsiConsole.Prompt(GetCardNamesPrompt(choice.ID));
+            var modify = AnsiConsole.Prompt(MenuHelper.GetCardNamesPrompt(choice.ID));
+            if (modify.ID == 0)
+            {
+                AnsiConsole.WriteLine("Thank you. No changed will be made. Exiting to Menu.");
+                Thread.Sleep(4000);
+                break;
+            }
             AnsiConsole.WriteLine("Card being Modified");
             AnsiConsole.WriteLine($"Prompt => {modify.Prompt}");
             AnsiConsole.WriteLine($"Answer => {modify.Answer}");
             AnsiConsole.WriteLine($"StackName = {choice.Name}");
+            // ASK FOR WHICH PART OF THE CARD TO BE MODIFIED 
+            // OPTIONS ARE (P)rompt, (A)nswer, (S)tackname, (x)exit(no change made)
+            var nodifyOption = new TextPrompt<Char>("Which option do you want to modify")
+                .AddChoice('p')
+                .AddChoice('a')
+                .AddChoice('s')
+                .AddChoice('x');
+            var selection = AnsiConsole.Prompt(nodifyOption);
+            switch (selection)
+            {
+                case 'p':
+                case 'P':
+                    AnsiConsole.WriteLine("Prompt will be modiified");
+                    break;
+                case 'a':
+                case 'A':
+                    AnsiConsole.WriteLine("Answer will be modiified");
+                    break;
+                case 's':
+                case 'S': AnsiConsole.WriteLine("Stack will be modiified");
+                    break;
+                case 'x':AnsiConsole.WriteLine("No changes made.  Exiting.");
+                    break;
+            }
             // Will Add More
             AnsiConsole.WriteLine();
             AnsiConsole.Write("Press Any Key to Exit.");
             Console.ReadKey(true);
             break;
         }
+    }
+
+    private string ChangePrompt(string oldName)
+    {
+        AnsiConsole.WriteLine();
+        AnsiConsole.WriteLine($"OLD PROMPT = {oldName}");
+        throw new NotImplementedException();
     }
 
 
@@ -208,30 +248,5 @@ public class CardMenu : IMenu
             Thread.Sleep(4000);
             return (false, false);
         }
-    }
-
-    private SelectionPrompt<Stack> GetStackNamePrompt(List<Stack> stackList)
-    {
-        var prompt = new SelectionPrompt<Stack>()
-            .Title("Select Stack Name to browse Flash Cards")
-            .UseConverter(s => $"[bold]{s.Name}[/]")
-            .AddChoices<Stack>(stackList);
-        return prompt;
-    }
-
-    private SelectionPrompt<Card> GetCardNamesPrompt(int stackID)
-    {
-        var list = _cardController.GetAllCardsByStack(stackID);
-        list.Add(new DataLayer.Models.Card
-        {
-            Answer = "CANCEL",
-            Prompt = "EDIT"
-        });
-        
-        var prompt = new SelectionPrompt<Card>()
-            .Title("Select Card to Edit")
-            .UseConverter(s => $"{s.Prompt,-15} {s.Answer}")
-            .AddChoices<Card>(list);
-        return prompt;
     }
 }
