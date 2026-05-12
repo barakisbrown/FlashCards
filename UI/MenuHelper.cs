@@ -7,13 +7,14 @@ namespace UI;
 
 public class MenuHelper
 {
-    private static CardController _cardController = new();
+    private readonly static CardController CardController = new();
     private static StackController _stackController = new();
     
-    public static SelectionPrompt<Stack> GetStackNamePrompt(List<Stack> stackList)
+    public static SelectionPrompt<Stack> GetStackNamePrompt(List<Stack>? stackList)
     {
+        const string title = $"  STACK";
         var prompt = new SelectionPrompt<Stack>()
-            .Title("Select Stack Name to browse Flash Cards")
+            .Title(title)
             .UseConverter(s => $"[bold]{s.Name}[/]")
             .AddChoices<Stack>(stackList);
         return prompt;
@@ -21,7 +22,7 @@ public class MenuHelper
     
     public static SelectionPrompt<Card> GetCardNamesPrompt(int stackID)
     {
-        var list = _cardController.GetAllCardsByStack(stackID);
+        var list = CardController.GetAllCardsByStack(stackID);
         list.Add(new DataLayer.Models.Card
         {
             Answer = "CANCEL",

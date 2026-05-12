@@ -43,7 +43,8 @@ public class CardMenu : IMenu
                     AddFlashCard();
                     continue;
                 case "Edit":
-                    EditFlashCards();
+                    var editCards = new EditCards(_cardController, _stackController);
+                    editCards.Begin();
                     continue;
                 case "Delete":
                     AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
@@ -136,81 +137,7 @@ public class CardMenu : IMenu
             }
         }
     }
-
-    private void EditFlashCards()
-    {
-        while(true)
-        {
-            AnsiConsole.Clear();
-            AnsiConsole.WriteLine("EDITING FLASHCARD INFORMATION");
-            // DISPLAY STACK TO GET FLASHCARD
-            // DISPLAY LIST OF CARDS FROM STACK TO EDIT
-            // ASK USER WHICH OF THE PARTS TO EDIT
-            var stackList = _stackController.GetStackNames();
-            AnsiConsole.WriteLine("Please Select Stack of Cards to find the Card that needs to be modified.");
-            AnsiConsole.WriteLine();
-            var choice = AnsiConsole.Prompt(MenuHelper.GetStackNamePrompt(stackList));
-            if (choice.ID == 0)
-            {
-                AnsiConsole.WriteLine("Thank you. No Changed will be made. Exiting to Menu.");
-                Thread.Sleep(4000);
-                break;
-            }
-
-            AnsiConsole.WriteLine();
-            AnsiConsole.WriteLine($"Select FlashCard from {choice.Name} stack to modify");
-            var modify = AnsiConsole.Prompt(MenuHelper.GetCardNamesPrompt(choice.ID));
-            if (modify.ID == 0)
-            {
-                AnsiConsole.WriteLine("Thank you. No changed will be made. Exiting to Menu.");
-                Thread.Sleep(4000);
-                break;
-            }
-            AnsiConsole.WriteLine("Card being Modified");
-            AnsiConsole.WriteLine($"Prompt => {modify.Prompt}");
-            AnsiConsole.WriteLine($"Answer => {modify.Answer}");
-            AnsiConsole.WriteLine($"StackName = {choice.Name}");
-            // ASK FOR WHICH PART OF THE CARD TO BE MODIFIED 
-            // OPTIONS ARE (P)rompt, (A)nswer, (S)tackname, (x)exit(no change made)
-            var nodifyOption = new TextPrompt<Char>("Which option do you want to modify")
-                .AddChoice('p')
-                .AddChoice('a')
-                .AddChoice('s')
-                .AddChoice('x');
-            var selection = AnsiConsole.Prompt(nodifyOption);
-            switch (selection)
-            {
-                case 'p':
-                case 'P':
-                    AnsiConsole.WriteLine("Prompt will be modiified");
-                    break;
-                case 'a':
-                case 'A':
-                    AnsiConsole.WriteLine("Answer will be modiified");
-                    break;
-                case 's':
-                case 'S': AnsiConsole.WriteLine("Stack will be modiified");
-                    break;
-                case 'x':AnsiConsole.WriteLine("No changes made.  Exiting.");
-                    break;
-            }
-            // Will Add More
-            AnsiConsole.WriteLine();
-            AnsiConsole.Write("Press Any Key to Exit.");
-            Console.ReadKey(true);
-            break;
-        }
-    }
-
-    private string ChangePrompt(string oldName)
-    {
-        AnsiConsole.WriteLine();
-        AnsiConsole.WriteLine($"OLD PROMPT = {oldName}");
-        throw new NotImplementedException();
-    }
-
-
-
+    
     /// <summary>
     /// Attempts to add a new flashcard to the system and prompts the user to add another card if the operation
     /// succeeds.
