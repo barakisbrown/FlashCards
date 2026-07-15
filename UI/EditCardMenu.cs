@@ -1,4 +1,5 @@
 using DataLayer.Controller;
+using DataLayer.Models;
 using Spectre.Console;
 
 namespace UI;
@@ -12,6 +13,8 @@ public class EditCards(CardController cardController, StackController stackContr
 
     public StackController? Stack { get => _stackController; init => _stackController = value; }
 
+    private enum Option { PROMPT = 'p', ANSWER = 'a', STACK = 's', WRITE='w', EXIT = 'x' };
+    
     public void Begin()
     {
         while (true)
@@ -33,46 +36,7 @@ public class EditCards(CardController cardController, StackController stackContr
                     Thread.Sleep(4000);
                     break;
                 }
-
-                AnsiConsole.WriteLine();
-                AnsiConsole.WriteLine($"Select FlashCard from {choice.Name} stack to modify");
-                var modify = AnsiConsole.Prompt(MenuHelper.GetCardNamesPrompt(choice.ID));
-                if (modify.ID == 0)
-                {
-                    AnsiConsole.WriteLine("Thank you. No changed will be made. Exiting to Menu.");
-                    Thread.Sleep(4000);
-                    break;
-                }
-                AnsiConsole.WriteLine("Card being Modified");
-                AnsiConsole.WriteLine($"Prompt => {modify.Prompt}");
-                AnsiConsole.WriteLine($"Answer => {modify.Answer}");
-                AnsiConsole.WriteLine($"StackName = {choice.Name}");
-            }
-            // ASK FOR WHICH PART OF THE CARD TO BE MODIFIED 
-            // OPTIONS ARE (P)rompt, (A)nswer, (S)tackname, (x)exit(no change made)
-            var nodifyOption = new TextPrompt<Char>("Which option do you want to modify")
-                .AddChoice('p')
-                .AddChoice('a')
-                .AddChoice('s')
-                .AddChoice('x');
-            
-            var selection = AnsiConsole.Prompt(nodifyOption);
-            switch (selection)
-            {
-                case 'p':
-                case 'P':
-                    AnsiConsole.WriteLine("Prompt will be modified");
-                    var (newName, modified) = ChangePrompt(modify);
-                    break;
-                case 'a':
-                case 'A':
-                    AnsiConsole.WriteLine("Answer will be modified");
-                    break;
-                case 's':
-                case 'S': AnsiConsole.WriteLine("Stack will be modified");
-                    break;
-                case 'x':AnsiConsole.WriteLine("No changes made.  Exiting.");
-                    break;
+                EditLoop(choice);                              
             }
             // Will Add More
             AnsiConsole.WriteLine();
@@ -83,35 +47,85 @@ public class EditCards(CardController cardController, StackController stackContr
         
     }
 
-    private (string,bool) ChangePrompt(string oldName)
+    private void EditLoop(Stack whichStack)
     {
         AnsiConsole.WriteLine();
-        AnsiConsole.WriteLine($"OLD PROMPT = {oldName}");
-        var newPrompt = new TextPrompt<string>("Enter new Prompt to be used or ENTER to skip changes.");
+        AnsiConsole.WriteLine($"Select FlashCard from {whichStack.Name} stack to modify");
+        var modify = AnsiConsole.Prompt(MenuHelper.GetCardNamesPrompt(whichStack.ID));
+        if (modify.ID == 0)
+        {
+            AnsiConsole.WriteLine("Thank you. No changed will be made. Exiting to Menu.");
+            Thread.Sleep(4000);
+            return;
+        }
+        AnsiConsole.WriteLine("Card being Modified");
+        AnsiConsole.WriteLine($"Prompt => {modify.Prompt}");
+        AnsiConsole.WriteLine($"Answer => {modify.Answer}");
+        AnsiConsole.WriteLine($"StackName = {whichStack.Name}");
         while (true)
         {
-            var choice = AnsiConsole.Prompt(newPrompt);
-            if (string.IsNullOrEmpty(choice))
+            // ASK FOR WHICH PART OF THE CARD TO BE MODIFIED 
+            // OPTIONS ARE (P)rompt, (A)nswer, (S)tackname, (x)exit(no change made), (W)rite Changes
+            var nodifyOption = new TextPrompt<Char>("Which option do you want to modify")
+                .AddChoice('p')
+                .AddChoice('a')
+                .AddChoice('s')
+                .AddChoice('w')
+                .AddChoice('x');
+
+            var selection = AnsiConsole.Prompt(nodifyOption);
+            switch (selection)
             {
-                AnsiConsole.WriteLine("Prompt will not be modified. Keeping old Prompt");
-                Thread.Sleep(4000);
-                return (oldName, false);
-            }
-            else
-            {
-                var confirm = AnsiConsole.Confirm("The new Prompt will be ${choice} (Y/N)");
-                if (confirm)
-                {
-                    AnsiConsole.WriteLine($"Prompt changed to {choice}");
-                    Thread.Sleep(4000);
-                    return (choice, true);
-                }
-                else
-                    continue;
+                case (char)Option.PROMPT:
+                    AnsiConsole.WriteLine("Prompt being changed.");
+                    modify = Modify(modify, Option.PROMPT);
+                    break;
+                case (char)Option.ANSWER:
+                    AnsiConsole.WriteLine("Answer being changed.");
+                    modify = Modify(modify, Option.ANSWER);
+                    break;
+                case (char)Option.STACK:
+                    AnsiConsole.WriteLine("Stack Name being changed.");
+                    modify = Modify(modify, Option.STACK);
+                    break;
+                case (char)Option.WRITE:
+                    var writeConfirm = AnsiConsole.Confirm("Saving Changes Warning..Do you wish to save these changes.");
+                    if (writeConfirm)
+                    {
+                        AnsiConsole.WriteLine("Chnages being saved to disk.");
+                        // Write(modify)
+                    }else
+                        AnsiConsole.WriteLine("Changes have not been saved to disk.");
+                    break;
+                case (char)Option.EXIT:
+                    AnsiConsole.WriteLine("No changes had been made. Exiting to Menu.");
+                    return;
             }
         }
     }
 
-    
+    private Card Modify(Card _card, Option which)
+    {
+        var displayOption = "User chose: ";
+        if (which == Option.PROMPT)
+            displayOption += "Prompt";
+        else if (which == Option.ANSWER)
+            displayOption += "Answer";
+        else if (which == Option.STACK)
+            displayOption += "Stack Name";
 
+        AnsiConsole.WriteLine(displayOption);
+
+        return _card;
+    }
+
+    /// <summary>
+    /// This actually does the Updat in the backend.
+    /// </summary>
+    /// <param name="_card"></param>
+    /// <returns></returns>
+    private bool Write(Card _card)
+    {
+        return true;
+    }
 }
