@@ -128,28 +128,28 @@ namespace DataLayer.Controller
         /// Retrieves a list of stacks for display, including a special entry for returning to the menu and excluding
         /// the default stack.
         /// </summary>
-        /// <returns>A list of stacks to be displayed. The list includes a 'Return to Menu. No Change Made.' entry and excludes
+        /// <returns>A list of stacks to be displayed. The list includes a 'EXIT WITHOUT CHANGES' entry and excludes
         /// the stack named 'DEFAULT'.</returns>
         public List<Stack> GetStackForDisplay()
         {
             var list = GetAllStacks();
-            list.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
+            list.Add(new DataLayer.Models.Stack { Name = "EXIT WITHOUT CHANGES" });
             var item = list.Find(x => x.Name.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase)).ID;
             list.RemoveAt(item);
             return list;
         }
-        
+
         /// <summary>
         /// Retrieves a list of available stacks, including an option to return to the menu without making changes.
         /// </summary>
         /// <remarks>The additional entry allows callers to present a 'cancel' or 'no action' option in
         /// user interfaces that require stack selection.</remarks>
         /// <returns>A list of <see cref="Stack"/> objects representing all available stacks. The list always includes an
-        /// additional entry labeled "Return to Menu. No Change Made." as the last item.</returns>
+        /// additional entry labeled "EXIT WITHOUT CHANGES" as the last item.</returns>
         public List<Stack> GetStackNames()
         {
             var list = GetAllStacks();
-            list.Add(new DataLayer.Models.Stack { Name = "Return to Menu. No Change Made." });
+            list.Add(new DataLayer.Models.Stack { Name = "EXIT WITHOUT CHANGES" });
             return list;
         }
     }
