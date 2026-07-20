@@ -4,13 +4,14 @@ namespace UI;
 
 public interface IMenu
 {
+    public const int SLEEP = 4000;
     public const string CardMenuTitle = "FlashCard-Menu.txt";
     public const string StackMenuTitle = "Stack-Menu.txt";
     public const string EditMenuTitle = "Edit-FlashCard-Menu.txt";
     public const string StudySessionTItle = "StudySession-Menu.txt";
     public const string MainMenuTitle = "Main-Menu.txt";
-    public CardController Card { get; init; }
-    public StackController Stack { get; init; }
+    public CardController CardCtr { get; init; }
+    public StackController StackCtr { get; init; }
     public void DisplayMenu();
 
     public void LoadMenu(string menuName);
