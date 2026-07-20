@@ -1,6 +1,7 @@
 using DataLayer.Controller;
 using DataLayer.Models;
 using Spectre.Console;
+using System.ComponentModel;
 
 namespace UI;
 
@@ -17,15 +18,16 @@ public class CardMenu : IMenu
         LoadMenu(IMenu.CardMenuTitle);
     }
 
-    public CardController Card { get => _cardController; init => _cardController = value; }
-    public StackController Stack { get => _stackController; init => _stackController = value; }
+    public CardController CardCtr { get => _cardController; init => _cardController = value; }
+    public StackController StackCtr { get => _stackController; init => _stackController = value; }
+
     public void DisplayMenu()
     {
         while (true)
         {
             AnsiConsole.Clear();
             AnsiConsole.Write(new FigletText("Flash Card Menu").Color(Color.Green));
-            AnsiConsole.WriteLine($"Number of Cards created currently {Card.Count}");
+            AnsiConsole.WriteLine($"Number of Cards created currently {CardCtr.Count}");
             AnsiConsole.WriteLine();
             AnsiConsole.WriteLine();
 
@@ -47,8 +49,8 @@ public class CardMenu : IMenu
                     editCards.Begin();
                     continue;
                 case "Delete":
-                    AnsiConsole.MarkupLine("[Yellow]Not Implemented Yet[/]");
-                    Thread.Sleep(1000); continue;
+                    DeleteCard();
+                    continue;
                 case "Exit": break;
             }
             break;
@@ -64,8 +66,8 @@ public class CardMenu : IMenu
 
     private void ListAllCards()
     {
-        var cards = Card.GetAllCards();
-        var stacks = Stack.GetAllStacks();
+        var cards = CardCtr.GetAllCards();
+        var stacks = StackCtr.GetAllStacks();
         var stackLookup = stacks.ToDictionary(s => s.ID, s => s.Name);
 
         var table = new Table().AddColumns("Prompt", "Answer", "Stack");
@@ -115,7 +117,7 @@ public class CardMenu : IMenu
             newCard.StackID = selStack.ID;
             // CHECK FOR DUPLICATE CARD FROM THE SAME STACK AND ASK THE USER IF HE WANTS 
             // TO STILL KEEP IT OR DISCARD
-            if (Card.CardExist(newCard))
+            if (CardCtr.CardExist(newCard))
             {
                 var confirmCard = AnsiConsole.Confirm("This card already exist in this stack. Do you still want to add it anyway?");
                 if (!confirmCard)
@@ -151,10 +153,10 @@ public class CardMenu : IMenu
     /// to add another card; otherwise, <see langword="false"/>.</returns>
     private (bool, bool) AddCard(Card newCard)
     {
-        var (success,message) = _cardController.AddCard(newCard);
+        var (success,message) = CardCtr.AddCard(newCard);
         if (success)
         {
-            var name = _stackController.GetStackNameById(newCard.StackID);
+            var name = StackCtr.GetStackNameById(newCard.StackID);
             AnsiConsole.WriteLine($"Congrats .. Successfully added a new flashcard into the system to the {name} stack.");
             var another = AnsiConsole.Confirm("Do you want to add an another FlashCard? (Y/N) ");
             if (another)
@@ -164,7 +166,7 @@ public class CardMenu : IMenu
             else
             {
                 AnsiConsole.WriteLine("Redirecting to the Card Menu.");
-                Thread.Sleep(3000);
+                Thread.Sleep(IMenu.SLEEP);
                 return (true, false);
             }
         }
@@ -172,8 +174,81 @@ public class CardMenu : IMenu
         {
             AnsiConsole.MarkupLineInterpolated($"[red]Error Adding a new FlashCard. Check with Administrator.[/]");
             AnsiConsole.MarkupLineInterpolated($"Exception Used => {message}");
-            Thread.Sleep(4000);
+            Thread.Sleep(IMenu.SLEEP);
             return (false, false);
         }
+    }
+
+
+    private void DeleteCard()
+    {       
+        while(true)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine("DELETE CARD AREA");
+            AnsiConsole.MarkupLineInterpolated($"[blink red]PRECEED WITH CAUTION.[/]");
+            AnsiConsole.WriteLine();
+            var stackList = StackCtr?.GetStackNames();
+            AnsiConsole.WriteLine("Please Select Stack of Cards to find the Card that needs to be modified.");
+            AnsiConsole.WriteLine();
+            while(stackList != null)
+            {
+                var choice = AnsiConsole.Prompt(MenuHelper.GetStackNamePrompt(stackList));
+                if (choice.ID == 0)
+                {
+                    AnsiConsole.WriteLine("Thank you. No Changed will be made. Exiting to Menu.");
+                    Thread.Sleep(IMenu.SLEEP);
+                    return;
+                }
+                AnsiConsole.WriteLine();
+                AnsiConsole.WriteLine($"Select FlashCard from {choice.Name} stack to edit");
+                var modify = AnsiConsole.Prompt(MenuHelper.GetCardNamesPrompt(choice.ID));
+                if (modify.StackID == 0)
+                {
+                    AnsiConsole.WriteLine("No Flash Card was selected.");
+                    Thread.Sleep(IMenu.SLEEP);
+                    break;
+                }
+                AnsiConsole.WriteLine("The Flash Card Selected TO BE DELETED");
+                AnsiConsole.WriteLine($"Prompt => {modify.Prompt}");
+                AnsiConsole.WriteLine($"Answer => {modify.Answer}");
+                AnsiConsole.WriteLine($"StackName = {choice.Name}");
+                // CONFIRMATION
+                var confirm = AnsiConsole.Confirm("Do you wish to delete this Flash Card? IT CAN NOT BE UNDONE!. (Y/N)");
+                if (confirm)
+                {
+                    var (deleted,message) = CardCtr.DeleteCard(modify);
+                    if (deleted)
+                    {
+                        AnsiConsole.WriteLine("Flash Card was deleted!");
+                        var another = AnsiConsole.Confirm("Do you wish to delete another Flash Card (Y/N)");
+                        if (another)
+                        {
+                            Thread.Sleep(1000);
+                            break;
+                        }
+                        else
+                        {
+                            Thread.Sleep(IMenu.SLEEP);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLineInterpolated($"[RED]CARD CAN NOT BE DELETED.  {message}[/]");
+                        AnsiConsole.MarkupInterpolated($"[RED]Please contact Admin[/]");
+                        Thread.Sleep(IMenu.SLEEP);
+                        return;
+                    }    
+
+                }
+                else
+                {
+                    AnsiConsole.WriteLine("Flash Card Selected will not be deleted.");
+                    Thread.Sleep(1000);
+                    break;
+                }
+            }
+        }       
     }
 }
