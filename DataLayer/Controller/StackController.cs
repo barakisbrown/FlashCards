@@ -74,7 +74,7 @@ namespace DataLayer.Controller
         
         public bool DeleteStack(string? deleteMe)
         {
-            if (deleteMe.IsNullOrEmpty() || (deleteMe.ToLower().Contains("default"))) return false;
+            if (string.IsNullOrEmpty(deleteMe) || (deleteMe.ToLower().Contains("default"))) return false;
             using var conn = MakeConnection;
             var deleted = conn.Execute(_deleteSQL, new { Name = deleteMe }) == 1;
             if (deleted)
