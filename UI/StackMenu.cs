@@ -16,9 +16,9 @@ public class StackMenu : IMenu
         _stack = stack;
         LoadMenu(IMenu.StackMenuTitle);
     }
-    
-    public CardController Card { get => _card; init => _card = value; }
-    public StackController Stack { get => _stack; init => _stack = value; }
+
+    public CardController CardCtr { get => _card; init => _card = value; }
+    public StackController StackCtr { get => _stack; init => _stack = value; }
     public void DisplayMenu()
     {
         while (true)
@@ -28,7 +28,7 @@ public class StackMenu : IMenu
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[b]NOTE: DEFAULT STACK CAN NOT BE REMOVED[/]");
             AnsiConsole.WriteLine();
-            AnsiConsole.WriteLine($"Number of Stacks created currently {Stack.COUNT}");
+            AnsiConsole.WriteLine($"Number of Stacks created currently {StackCtr.COUNT}");
             AnsiConsole.WriteLine();
             AnsiConsole.WriteLine();
 
@@ -47,12 +47,11 @@ public class StackMenu : IMenu
                     continue;
                 case "Delete":
                     DeleteStack();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(2000);
                     continue;
-                case "View":                      
-                    ShowStackCardCount();
-                    AnsiConsole.Write("Press any key to return to menu.");
-                    Console.ReadKey(true);
+                case "View":
+                    View();
+                    Thread.Sleep(2000);
                     continue;
                 case "Exit": break;
             }
@@ -61,23 +60,23 @@ public class StackMenu : IMenu
     }
     public void LoadMenu(string menuName)
     {
-        var path = AppDomain.CurrentDomain.BaseDirectory + "//MENUS//";         
+        var path = AppDomain.CurrentDomain.BaseDirectory + "//MENUS//";
 
         _menu = File.ReadAllLines(Path.Combine(path, menuName));
     }
 
     private void ShowStackCardCount()
     {
-        List<CardsPerStackDTO> cardPerStacks = Stack.StackTotalCardView();
+        List<CardsPerStackDTO> cardPerStacks = StackCtr.StackTotalCardView();
 
         // DISPLAY TABLE
         var table = new Table().RoundedBorder();
         table.AddColumn("Name");
-        table.AddColumn("Number of Cards",col => col.RightAligned());
+        table.AddColumn("Number of Cards", col => col.RightAligned());
 
-        foreach(var cps in cardPerStacks)
+        foreach (var cps in cardPerStacks)
         {
-            table.AddRow(cps.Name,cps.TotalCards.ToString());
+            table.AddRow(cps.Name, cps.TotalCards.ToString());
         }
 
         AnsiConsole.Write(table);
@@ -119,13 +118,14 @@ public class StackMenu : IMenu
                 Thread.Sleep(3000);
                 continue;
             }
-        }                
+        }
     }
 
-    private void RenameStack() {
+    private void RenameStack()
+    {
 
         bool changed = false;
-        while(!changed)
+        while (!changed)
         {
 
             var stackList = _stack.GetStackForDisplay();
@@ -134,8 +134,8 @@ public class StackMenu : IMenu
             AnsiConsole.WriteLine();
             AnsiConsole.WriteLine("RENAME A STACK NAME");
             AnsiConsole.WriteLine();
-            
-            var choice  = AnsiConsole.Prompt(MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO CHANGE"));
+
+            var choice = AnsiConsole.Prompt(MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO CHANGE"));
 
             if (choice.ID == 0)
                 break;
@@ -153,7 +153,7 @@ public class StackMenu : IMenu
                     continue;
                 }
 
-                if (string.Equals(oldName,newName,StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(oldName, newName, StringComparison.OrdinalIgnoreCase))
                 {
                     AnsiConsole.MarkupLineInterpolated($"[red]Error:Name can not be the same. Please try again.[/]");
                     AnsiConsole.WriteLine();
@@ -161,7 +161,7 @@ public class StackMenu : IMenu
                 }
 
                 var confirmString = "Old Stack Name => " + oldName + "New Stack Name => " + newName;
-                
+
                 AnsiConsole.WriteLine(confirmString);
                 bool confirm = AnsiConsole.Confirm("Is this Correct?");
                 if (confirm)
@@ -195,20 +195,20 @@ public class StackMenu : IMenu
     /// </summary>
     /// <remarks>This operation is irreversible. Deleting a stack will permanently remove all flashcards
     /// contained within it. The user is prompted to confirm the deletion before any data is removed.</remarks>
-    private void DeleteStack() 
+    private void DeleteStack()
     {
         bool done = false;
         while (done == false)
         {
             var stackList = _stack.GetStackForDisplay();
-            
+
             AnsiConsole.Clear();
             AnsiConsole.WriteLine();
             AnsiConsole.WriteLine("DELETE STACK");
             AnsiConsole.MarkupLineInterpolated($"[bold]This deletes all flashcards that are stored in this stack also.[/]");
             AnsiConsole.MarkupLineInterpolated($"[bold]Please be careful. Once done it can not be undone.[/]");
             AnsiConsole.WriteLine();
-        
+
             var choice = AnsiConsole.Prompt(MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO DELETE"));
 
             if (choice.ID == 0)
@@ -227,12 +227,12 @@ public class StackMenu : IMenu
 
             if (confirm)
             {
-                if (Stack.DeleteStack(choice.Name))
+                if (StackCtr.DeleteStack(choice.Name))
                 {
                     AnsiConsole.MarkupLineInterpolated($"[red]Stack {choice.Name} and #{total} flashcards have been deleted from the system.[/]");
                     done = true;
                     break;
-                }                
+                }
             }
             else
             {
@@ -240,6 +240,57 @@ public class StackMenu : IMenu
                 Thread.Sleep(3000);
                 continue;
             }
-        }       
-    }  
+        }
+    }
+    private void View()
+    {
+        while (true)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine("VIEW STACK SECTION");
+            var Options = new TextPrompt<Char>("Do you wish to view all stacks OR view cards per stack OR exit")
+                .AddChoice('v')
+                .AddChoice('c')
+                .AddChoice('x');
+
+            var stackOptions = AnsiConsole.Prompt(Options);
+            if (stackOptions == 'v')
+            {
+                ShowStackCardCount();
+                AnsiConsole.WriteLine("Press any key");
+                Console.ReadKey(true);
+            }
+            else if (stackOptions == 'c')
+            {
+                var stackList = StackCtr?.GetStackNames();
+                AnsiConsole.WriteLine("Please Select Stack of Cards to find the Card that needs to be listed.");
+                AnsiConsole.WriteLine();
+                if (stackList != null)
+                {
+                    var choice = AnsiConsole.Prompt(MenuHelper.GetStackNamePrompt(stackList));
+                    if (choice.ID == 0)
+                    {
+                        AnsiConsole.WriteLine("Thank you. No Stack Selected");
+                        Console.ReadKey(true);
+                        continue;
+                    }
+
+                    var cards = CardCtr.GetAllCardsByStack(choice.ID);
+                    var table = new Table().AddColumns("Prompt", "Answer");
+                    foreach (var card in cards)
+                    {
+                        table.AddRow(card.Prompt ?? string.Empty, card.Answer ?? string.Empty);
+                    }
+                    AnsiConsole.Write(table);
+                    AnsiConsole.WriteLine("Press any key");
+                    Console.ReadKey(true);
+                }
+            }
+            else if (stackOptions == 'x')
+            {
+                AnsiConsole.WriteLine("Returning to Menu.");
+                return;
+            }
+        }
+    }
 }
