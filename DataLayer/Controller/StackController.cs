@@ -3,6 +3,9 @@ using DataLayer.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Spectre.Console;
+using System.Data;
+using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 
 namespace DataLayer.Controller
 {    
@@ -13,41 +16,56 @@ namespace DataLayer.Controller
     /// </summary>
     public class StackController
     {
-        private static readonly DbUser dataSource = Configuration.GetUserSecretsConnStrings();
-        private readonly string selectSql = "SELECT * FROM dbo.Stack";
-        private readonly string insertSql = "INSERT INTO dbo.Stack(Name) VALUE (@Name)";
-        private readonly string editSQL = "UPDATE dbo.Stack WHERE dbo.Stack.Name = @Name";
-        private readonly string deleteSQL = "DELETE dbo.Stack WHERE dbo.Stack.Name = @Name";
-        private List<Stack> stacks = [];
+        private readonly static DbUser _dataSource = Configuration.GetUserSecretsConnStrings();
+        private const string _selectSql = "SELECT * FROM dbo.Stack;";
+        private const string _selectDisplaySql = "SELECT * FROM dbo.Stack WHERE Stack.Name != 'DEFAULT'";
+        private const string _insertSql = "INSERT INTO dbo.Stack (Name) VALUES (@Name)";
+        private const string _editSQL = "UPDATE dbo.Stack SET Name = @NewName WHERE Name = @OldName";
+        private const string _deleteSQL = "DELETE FROM dbo.Stack WHERE Name = @Name";
+        private const string _viewSql = "SELECT * FROM dbo.CardsPerStack";
+        private List<Stack> _stacks = new List<Stack>();
 
         public StackController()
         {
-            stacks = GetAllStacks();
+            _stacks = GetAllStacks();
         }
 
-        public bool AddStack(string? Name)
+        public (bool,bool) AddStack(string? Name)
         {
-            if (Name.IsNullOrEmpty() || VeriyName(Name)) return false;
-            object[] param = { new { Name } };
-            bool success = MakeConnection.Execute(insertSql, param) == 1;
-            if (success)
+            bool added = false;
+            bool unique = false;
+            if (string.IsNullOrEmpty(Name)) return (added,unique);
+            else
             {
-                stacks = GetAllStacks();
-                return true;
+                try
+                {
+                    using var conn = MakeConnection;
+                    var rows = conn.Execute(_insertSql, new { Name });
+                }
+                catch (SqlException cmd) when (cmd.Number == 2627)
+                {
+                   
+                    added = false;
+                    unique = true;
+                }
+                finally
+                {
+                    added = true;
+                }
             }
 
-            return false;
+            return (added,unique);
         }
 
-        public bool EditStack(string? NameEdit)
+        public bool EditStack(string? OrigName, string NewEdit)
         {
-            if (NameEdit.IsNullOrEmpty()) return false;
+            if (string.IsNullOrEmpty(OrigName) || string.IsNullOrEmpty(NewEdit)) return false;
 
-            if (VeriyName(NameEdit)) return false;
-
-            if (MakeConnection.Execute(editSQL, new { Name = NameEdit }) == 1)
+            using var conn = MakeConnection;
+            Object[] parm = { new { NewName = NewEdit, OldName = OrigName } };
+            if (conn.Execute(_editSQL, parm) == 1)
             {
-                stacks = GetAllStacks();
+                _stacks = GetAllStacks();
                 return true;
             }
 
@@ -56,49 +74,83 @@ namespace DataLayer.Controller
         
         public bool DeleteStack(string? deleteMe)
         {
-            if (deleteMe.IsNullOrEmpty() || deleteMe == "DEFAULT") return false;
-            return MakeConnection.Execute(deleteSQL, new { Name = deleteMe }) == 1;
+            if (deleteMe.IsNullOrEmpty() || (deleteMe.ToLower().Contains("default"))) return false;
+            using var conn = MakeConnection;
+            var deleted = conn.Execute(_deleteSQL, new { Name = deleteMe }) == 1;
+            if (deleted)
+            {
+                _stacks = GetAllStacks();
+                return true;
+            }
+            return false;
         }
 
 
         public List<Stack> GetAllStacks()
         {
-            return MakeConnection.Query<Stack>(selectSql).ToList();
+            using var conn = MakeConnection;
+            return conn.Query<Stack>(_selectSql).ToList();
 
         }
-
-        /// <summary>
-        /// Searches the internal list for a specified name
-        /// </summary>
-        /// <param name="Name">Name to be found</param>
-        /// <returns>true if found false if not found</returns>
-        public bool VeriyName(string ?Name)
-        {
-            var exist = stacks.FirstOrDefault(x => x.Name == Name);
-            return (exist == null);
-
-        }
-
-
-
-        public int COUNT => stacks.Count;
+        
+        public string GetStackNameById(int id) => _stacks.First( x=> x.ID == id).Name;
+        
+        public int COUNT => _stacks.Count;
         private SqlConnection MakeConnection
         {
             get
             {
-                var conn = new SqlConnection(dataSource.Main);
+                var conn = new SqlConnection(_dataSource.Main);
                 if (conn.State != System.Data.ConnectionState.Open)
                     try
                     {
                         conn.Open();
                     }
-                    catch (Exception e)
+                    catch (SqlException)
                     {
-                        AnsiConsole.WriteLine("Error problem opening connection to the database engine. CHeck to see if it running.");
                         throw;
                     }
                 return conn;
             }
+        }
+        /// <summary>
+        /// Retrieves a list of card stack totals as data transfer objects. 
+        /// </summary>
+        /// <returns>A list of <see cref="CardsPerStackDTO"/> objects representing the total cards per stack. The list will be
+        /// empty if no stacks are found.</returns>
+        public List<CardsPerStackDTO> StackTotalCardView()
+        {
+            using var conn = MakeConnection;
+            return conn.Query<CardsPerStackDTO>(_viewSql).ToList();
+            
+        }
+        /// <summary>
+        /// Retrieves a list of stacks for display, including a special entry for returning to the menu and excluding
+        /// the default stack.
+        /// </summary>
+        /// <returns>A list of stacks to be displayed. The list includes a 'EXIT WITHOUT CHANGES' entry and excludes
+        /// the stack named 'DEFAULT'.</returns>
+        public List<Stack> GetStackForDisplay()
+        {
+            var list = GetAllStacks();
+            list.Add(new DataLayer.Models.Stack { Name = "EXIT WITHOUT CHANGES" });
+            var item = list.Find(x => x.Name.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase)).ID;
+            list.RemoveAt(item);
+            return list;
+        }
+
+        /// <summary>
+        /// Retrieves a list of available stacks, including an option to return to the menu without making changes.
+        /// </summary>
+        /// <remarks>The additional entry allows callers to present a 'cancel' or 'no action' option in
+        /// user interfaces that require stack selection.</remarks>
+        /// <returns>A list of <see cref="Stack"/> objects representing all available stacks. The list always includes an
+        /// additional entry labeled "EXIT WITHOUT CHANGES" as the last item.</returns>
+        public List<Stack> GetStackNames()
+        {
+            var list = GetAllStacks();
+            list.Add(new DataLayer.Models.Stack { Name = "EXIT WITHOUT CHANGES" });
+            return list;
         }
     }
 }

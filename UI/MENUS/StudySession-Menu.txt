@@ -1,0 +1,5 @@
+﻿STUDY SESSION MENU
+
+New -> Start a new lesson
+History -> View history
+Exit -> Go back a menu

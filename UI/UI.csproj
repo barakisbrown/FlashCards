@@ -7,6 +7,39 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="MENUS\Edit-FlashCard-Menu.txt" />
+    <None Remove="MENUS\Flashcard-Menu.txt" />
+    <None Remove="MENUS\Main-Menu.txt" />
+    <None Remove="MENUS\Stack-Menu.txt" />
+    <None Remove="MENUS\StudySession-Menu.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="MENUS\Flashcard-Menu.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="MENUS\Edit-FlashCard-Menu.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MENUS\Main-Menu.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MENUS\Stack-Menu.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MENUS\StudySession-Menu.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" Version="0.54.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
   </ItemGroup>
 
