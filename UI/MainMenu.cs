@@ -1,5 +1,6 @@
 ﻿using DataLayer.Controller;
 using DataLayer.Models;
+using Microsoft.SqlServer.Management.XEvent;
 using Spectre.Console;
 
 namespace UI
@@ -28,9 +29,6 @@ namespace UI
             {
                 AnsiConsole.Clear();
                 AnsiConsole.Write(new FigletText(_appName).Color(Color.Green));
-                AnsiConsole.MarkupLine("[grey]{0}[/]", _appNote);
-                AnsiConsole.WriteLine($"Number of FlashCards = {_card.Count}");
-                AnsiConsole.WriteLine($"Number of Stacks = {_stack.COUNT}");
                 AnsiConsole.WriteLine();
 
                 var choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
@@ -39,8 +37,8 @@ namespace UI
                  switch (choice)
                 {
                     case "Study Sessions":
-                        AnsiConsole.MarkupLine("[yellow]Study flow not implemented yet.[/]");
-                        Thread.Sleep(1000);
+                        var session = new StudySession.Session(_card, _stack);
+                        session.DisplayMenu();
                         continue;
                     case "FlashCards":
                         new CardMenu(_card,_stack).DisplayMenu();
