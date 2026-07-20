@@ -20,8 +20,8 @@ namespace UI
 
         }
 
-        public CardController Card { get => _card; init => _card = value; }
-        public StackController Stack { get => _stack; init  => _stack = value; }
+        public CardController CardCtr { get => _card; init => _card = value; }
+        public StackController StackCtr { get => _stack; init  => _stack = value; }
         public void DisplayMenu()
         {
             while (true)
@@ -48,11 +48,6 @@ namespace UI
                     case "Stacks":
                         new StackMenu(_card,_stack).DisplayMenu();
                         continue;
-                    case "List-Cards":
-                        ListCards();
-                        AnsiConsole.WriteLine("Press any key to return to menu.");
-                        Console.ReadKey(true);
-                        continue;
                     case "Exit":
                         break;
                 }
@@ -67,25 +62,6 @@ namespace UI
 
             _menu = File.ReadAllLines(Path.Combine(path, menuName));
 
-        }
-
-        private void ListCards()
-        {
-            var cards = _card.GetAllCards();
-            var stacks = _stack.GetAllStacks();
-            var stackLookup = stacks.ToDictionary(s => s.ID, s => s.Name);
-
-            var table = new Table();
-            table.AddColumns("Prompt");
-            table.AddColumn("Answer",c=>c.Centered());
-            table.AddColumn("Stack");
-            foreach (var c in cards)
-            {
-                var stackName = stackLookup.ContainsKey(c.StackID) ? stackLookup[c.StackID] : "DEFAULT";
-                table.AddRow(c.Prompt ?? string.Empty, c.Answer ?? string.Empty, stackName);
-            }
-
-            AnsiConsole.Write(table);
-        }
+        }       
     }
 }
