@@ -1,5 +1,4 @@
 ﻿Study Sessions
 FlashCards
 Stacks
-List-Cards
 Exit
