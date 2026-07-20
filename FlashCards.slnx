@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="App/App.csproj" />
   <Project Path="DataLayer/DataLayer.csproj" />
+  <Project Path="StudySession/StudySession.csproj" Id="66eb9597-96af-4457-9ace-2300c9eed29d" />
   <Project Path="UI/UI.csproj" Id="f9da7de9-bd94-42f1-8a72-d664ad7d91a2" />
 </Solution>
