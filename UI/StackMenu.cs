@@ -1,5 +1,5 @@
 using DataLayer.Controller;
-using DataLayer.Models;
+using DataLayer.Models.DTO;
 using Spectre.Console;
 
 namespace UI;
