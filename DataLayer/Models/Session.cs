@@ -9,7 +9,11 @@
 public class Session
 {
     public int ID { get; set; }
+
+    public string StackName { get; set; } = string.Empty;
     public DateTime StudyDate { get; set; }
+    public int NumQuestions { get; set; }
     public int StudyScore { get; set; }
     public int StackID { get; set; }
+    
 }
