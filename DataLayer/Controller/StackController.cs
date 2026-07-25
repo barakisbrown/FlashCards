@@ -2,6 +2,7 @@
 
 using Dapper;
 using DataLayer.Models;
+using DataLayer.Models.DTO;
 using Microsoft.Data.SqlClient;
 
 /// <summary>
@@ -36,17 +37,17 @@ public class StackController
             {
                 using var conn = MakeConnection;
                 var rows = conn.Execute(_insertSql, new { Name });
+                if (rows == 1)
+                {
+                    _stacks = GetAllStacks();
+                    added = true;
+                }
             }
             catch (SqlException cmd) when (cmd.Number == 2627)
             {
                
                 added = false;
                 unique = true;
-            }
-            finally
-            {
-                added = true;
-                _stacks = GetAllStacks();
             }
         }
 
