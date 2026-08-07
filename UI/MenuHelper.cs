@@ -5,7 +5,7 @@ using Spectre.Console;
 
 namespace UI;
 
-public class MenuHelper
+public static class MenuHelper
 {
     private readonly static CardController CardController = new();
     private static StackController _stackController = new();
