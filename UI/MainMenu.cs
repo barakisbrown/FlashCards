@@ -37,7 +37,7 @@ namespace UI
                  switch (choice)
                 {
                     case "Study Sessions":
-                        var session = new StudySession.Session(_card, _stack);
+                        var session = new StudySession.Sessions(_card, _stack);
                         session.DisplayMenu();
                         continue;
                     case "FlashCards":
