@@ -1,24 +1,26 @@
 ﻿namespace DataLayer.Controller;
 
-using DataLayer.Models;
 using Dapper;
+using DataLayer.Models;
+using DataLayer.Models.DTO;
 using Microsoft.Data.SqlClient;
-
 
 public class SessionController
 {
-    private readonly string _tableName = "dbo.SESSIONS";
+    private readonly StackController _stack = new();
+    private readonly string _tableName = "dbo.Sessions";
     private readonly static DbUser _dataSource = Configuration.GetUserSecretsConnStrings();
-    private readonly string _selectSQL = "SELECT * FROM ";
+    private readonly string _selectSQL;
     private readonly string _insertSQL;
     private List<Session> _sessions = new();
 
-    public SessionController()
+    public SessionController(StackController stack)
     {
-        _selectSQL = "" + _tableName;
-        _insertSQL = "INSERT INTO " + _tableName + "(StackName,StudyDate,NumQuestions,StudyScore,StackID)";
-        _insertSQL += "values (@StackName,@StudyDate,@NumQuestions,@StudyScore,@StackID)";
+        _selectSQL = "SELECT * FROM " + _tableName;
+        _insertSQL = "INSERT INTO " + _tableName + " (StudyDate,StudyScore,StackID,StackName,NumQuestions)";
+        _insertSQL += "values (@StudyDate,@StudyScore,@StackID,@StackName,@NumQuestions)";
         _sessions = GetAllSessions();
+        _stack = stack;
     }
 
     /// <summary>
@@ -60,7 +62,14 @@ public class SessionController
         {
             try
             {                
-                object[] param = { new { data.StackName,data.StudyDate,data.NumQuestions,data.StudyScore,data.StackID } };
+                object[] param = [new 
+                    {   
+                        data.StudyDate,
+                        data.StudyScore,
+                        data.StackID,
+                        data.StackName,
+                        data.NumQuestions
+                }];
                 using var conn = MakeConnection;
                 var rows = conn.Execute(_insertSQL, new { param });
                 if (rows == 1)
@@ -78,9 +87,42 @@ public class SessionController
         return (added,message);
     }
 
+    public (bool,string) AddSession(SessionDTO Data,int StackID)
+    {
+        Session data = new()
+        {
+            StackName = Data.StackName,
+            StudyDate = Data.Completed,
+            NumQuestions = Data.TotalQuestions,
+            StudyScore = Data.Score,
+            StackID = StackID
+        };
+        return AddSession(data);
+    }
+
     /// <summary>
     /// Returns how many session have been logged in the system
     /// </summary>
     public int COUNT => _sessions.Count;
+    
+    public IReadOnlyList<SessionDTO> GetUserSessionData()
+    {
+        _sessions = GetAllSessions();
+        var dTOs  = new List<SessionDTO>();
+
+        foreach(var single in _sessions)
+        {
+            var one = new SessionDTO
+            {
+                StackName = single.StackName,
+                TotalQuestions = single.NumQuestions,
+                Completed = single.StudyDate,
+                Score = single.StudyScore
+            };
+            dTOs.Add(one);
+        }
+
+        return dTOs;
+    }
 
 }
