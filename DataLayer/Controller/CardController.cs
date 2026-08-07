@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using DataLayer.Models;
+using DataLayer.Models.DTO;
 using Microsoft.Data.SqlClient;
 using Spectre.Console;
 
@@ -91,6 +92,23 @@ public class CardController
     public Card GetCardByID(int ID) => GetAllCards().FirstOrDefault(x => x.ID == ID);
 
     public List<Card> GetAllCardsByStack(int stackID) => GetAllCards().Where(x => x.StackID == stackID).ToList();
+
+    public List<CardDTO> DisplayCardsByStack(int stackID)
+    {
+        var list = new List<CardDTO>();
+        var cards = GetAllCards().Where(x => x.StackID == stackID).ToList();
+        foreach(var single in cards)
+        {
+            var one = new CardDTO
+            {
+                Front = single.Prompt,
+                Back = single.Answer
+            };
+            list.Add(one);
+        }
+
+        return list;
+    }
 
     public int GetNumberCardsInStack(int fkey) => GetAllCardsByStack(fkey).Count;
 
