@@ -27,11 +27,11 @@ public class EditCards(CardController cardController, StackController stackContr
             // DISPLAY LIST OF CARDS FROM STACK TO EDIT
             // ASK USER WHICH OF THE PARTS TO EDIT
             var stackList = StackCtr?.GetStackNames();
-            AnsiConsole.WriteLine("Please Select Stack of Cards to find the Card that needs to be modified.");
+            AnsiConsole.WriteLine("Please Select Stack of Cards to find the Flash Card you would like to modify.");
             AnsiConsole.WriteLine();
             if (stackList != null)
             {
-                var choice = AnsiConsole.Prompt(MenuHelper.GetStackNamePrompt(stackList));
+                var choice = MenuHelper.GetStackNamePrompt(stackList);
                 if (choice.ID == 0)
                 {
                     AnsiConsole.WriteLine("Thank you. No Changed will be made. Exiting to Menu.");
@@ -52,8 +52,8 @@ public class EditCards(CardController cardController, StackController stackContr
     private void EditLoop(Stack whichStack)
     {
         AnsiConsole.WriteLine();
-        AnsiConsole.WriteLine($"Select FlashCard from {whichStack.Name} stack to edit");
-        var modify = AnsiConsole.Prompt(MenuHelper.GetCardNamesPrompt(whichStack.ID));
+        AnsiConsole.WriteLine($"Select Flash Card from Stack {whichStack.Name} that you would like to edit");
+        var modify = MenuHelper.GetCardNamesPrompt(whichStack.ID);
         if (modify.ID == 0)
         {
             AnsiConsole.WriteLine("Thank you. No changed will be made. Exiting to Menu.");
@@ -69,6 +69,9 @@ public class EditCards(CardController cardController, StackController stackContr
             AnsiConsole.WriteLine($"StackName = {whichStack.Name}");
             // ASK FOR WHICH PART OF THE CARD TO BE MODIFIED 
             // OPTIONS ARE (P)rompt, (A)nswer, (S)tackname, (x)exit(no change made), (W)rite Changes
+            AnsiConsole.WriteLine("Options are P)rompt / A)nswer / S)tack name / W)rite Changes / X)exit");
+            AnsiConsole.MarkupLineInterpolated($"[bold]Make sure you write your chnages for it to be saved to disk.[/]");
+
             var nodifyOption = new TextPrompt<Char>("Which option do you want to modify")
                 .AddChoice('p')
                 .AddChoice('a')
@@ -92,7 +95,7 @@ public class EditCards(CardController cardController, StackController stackContr
                     var writeConfirm = AnsiConsole.Confirm("Saving Changes Warning..Do you wish to save these changes.");
                     if (writeConfirm)
                     {
-                        AnsiConsole.WriteLine("Flash Card being saved to disk.");
+                        AnsiConsole.WriteLine("Changes has been saved.");
                         Write(modify);                      
                     }
                     else
@@ -167,7 +170,7 @@ public class EditCards(CardController cardController, StackController stackContr
             var stackList = StackCtr?.GetStackNames();
             if (stackList != null)
             {
-                var choice = AnsiConsole.Prompt(MenuHelper.GetStackNamePrompt(stackList));
+                var choice = MenuHelper.GetStackNamePrompt(stackList);
                 if (choice.ID == 0)
                 {
                     AnsiConsole.WriteLine("No change made for the Stack Name.");

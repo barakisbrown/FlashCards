@@ -35,8 +35,7 @@ public class Sessions(CardController _card,StackController _stack)
                     NewSession();
                     break;
                 case "HISTORY":
-                    AnsiConsole.MarkupLineInterpolated($"[yellow]Not Implemented yet.[/]");
-                    Console.ReadKey(true);
+                    DisplayUserStats();
                     break;
                 case "EXIT":
                     return;
@@ -115,7 +114,7 @@ public class Sessions(CardController _card,StackController _stack)
             AnsiConsole.Clear();
             AnsiConsole.WriteLine("Lets start a new study session");
 
-            var stackList = _stack.GetStackForDisplay();
+            var stackList = _stack.GetStackForDisplay(true);
             var choice = AnsiConsole.Prompt(GetStackNameList(stackList));
                         
             if (choice.ID != 0)
@@ -224,5 +223,40 @@ public class Sessions(CardController _card,StackController _stack)
                 break;
         }
         return (asked, correct);
+    }
+
+    private void DisplayUserStats()
+    {
+        AnsiConsole.Clear();
+        var sessionData = _sessionCtr.GetUserSessionData();
+        if (sessionData.Count == 0)
+        {
+            AnsiConsole.MarkupLineInterpolated($"[RED]NO USER DATA EXIST.  USE THE NEW MENU OPTION INSTEAD.[/]");
+        }
+        else
+        {
+            var title = $"[Bold]USER STATS SO FAR[/]";
+            var table = new Table();
+            table.Title(title);
+            table.AddColumn("Stack Name");
+            table.AddColumn("Question Asked");
+            table.AddColumn("Question Answered");
+            table.AddColumn("Score Percentage");
+            table.AddColumn("Session Completed");
+
+
+            foreach (var single in sessionData)
+            {
+                table.AddRow(
+                    single.StackName, single.TotalQuestions.ToString(), single.Score.ToString(),
+                    single.percentage.ToString() + "%", single.Completed.ToShortDateString()
+                    );
+            }
+
+            AnsiConsole.Write(table);
+        }
+        AnsiConsole.WriteLine("Press any key to exit.");
+        Console.ReadKey(true);
+        Thread.Sleep(2000);
     }
 }

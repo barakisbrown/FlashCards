@@ -39,19 +39,19 @@ public class StackMenu : IMenu
             {
                 case "Add":
                     AddNewStack();
-                    Thread.Sleep(2000);
+                    Thread.Sleep(IMenu.SLEEP);
                     continue;
                 case "Rename":
                     RenameStack();
-                    Thread.Sleep(2000);
+                    Thread.Sleep(IMenu.SLEEP);
                     continue;
                 case "Delete":
                     DeleteStack();
-                    Thread.Sleep(2000);
+                    Thread.Sleep(IMenu.SLEEP);
                     continue;
                 case "View":
                     View();
-                    Thread.Sleep(2000);
+                    Thread.Sleep(IMenu.SLEEP);
                     continue;
                 case "Exit": break;
             }
@@ -93,14 +93,13 @@ public class StackMenu : IMenu
             AnsiConsole.Clear();
             AnsiConsole.WriteLine("Please enter a new Stack Name to be used");
             AnsiConsole.WriteLine("Stack Names need to be Unique and can not be called either the following: DEFAULT/default");
-            AnsiConsole.WriteLine("OR TYPE QUIT/Quit TO exit back to to the menu.");
-            var name = AnsiConsole.Ask<string>("Stack Name => ");
+            AnsiConsole.WriteLine("OR PRESS ENTER TO EXIT");
+            var name = MenuHelper.GetTextPrompt("Stack Name => ");
             //  CHECK FOR DUPLICATE ENTRIES SINCE ALL ENTRIES ARE UNIQUE.  Values Default/Quit/Exit can not be used.
             //  Quit takes the user out of here and back to the menu.
-            if (name.ToLower().Contains("quit") || name.ToLower().Contains("exit"))
+            if (name == string.Empty)
             {
-                AnsiConsole.WriteLine("Return back to the Stack Menu.");
-                AnsiConsole.WriteLine("Press any key.");
+                AnsiConsole.WriteLine("Nothing Added. Press any key.");
                 Console.ReadKey(true);
                 break;
             }
@@ -114,7 +113,7 @@ public class StackMenu : IMenu
             }
             if (added)
             {
-                AnsiConsole.MarkupLineInterpolated($"[bold]Name ${name} has beeen successfully added to the system.[/]");
+                AnsiConsole.MarkupLineInterpolated($"[bold]Name {name} has beeen successfully added to the system.[/]");
                 Thread.Sleep(3000);
                 continue;
             }
@@ -135,7 +134,7 @@ public class StackMenu : IMenu
             AnsiConsole.WriteLine("RENAME A STACK NAME");
             AnsiConsole.WriteLine();
 
-            var choice = AnsiConsole.Prompt(MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO CHANGE"));
+            var choice = MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO CHANGE");
 
             if (choice.ID == 0)
                 break;
@@ -143,9 +142,15 @@ public class StackMenu : IMenu
             while (true)
             {
                 var oldName = choice.Name.Trim();
-                AnsiConsole.MarkupInterpolated($"Old Stack Name => {oldName}");
-                var newName = AnsiConsole.Ask<string>("New Stack Name(DEFAULT NOT ALLOWED)=> ");
+                AnsiConsole.MarkupInterpolated($"Old Stack Name => {oldName}\t");
+                var newName = MenuHelper.GetTextPrompt("New Stack Name(DEFAULT NOT ALLOWED)=> ");
 
+                if (newName == string.Empty)
+                {
+                    AnsiConsole.WriteLine("No Changes Made. Exiting.");
+                    Thread.Sleep(IMenu.SLEEP);
+                    break;
+                }
                 if (newName.Contains("DEFAULT"))
                 {
                     AnsiConsole.MarkupLineInterpolated($"[red]ERROR:Name can not be called DEFAULT. Please try again.[/]");
@@ -160,7 +165,7 @@ public class StackMenu : IMenu
                     continue;
                 }
 
-                var confirmString = "Old Stack Name => " + oldName + "New Stack Name => " + newName;
+                var confirmString = "Old Stack Name => " + oldName + "\tNew Stack Name => " + newName;
 
                 AnsiConsole.WriteLine(confirmString);
                 bool confirm = AnsiConsole.Confirm("Is this Correct?");
@@ -209,7 +214,7 @@ public class StackMenu : IMenu
             AnsiConsole.MarkupLineInterpolated($"[bold]Please be careful. Once done it can not be undone.[/]");
             AnsiConsole.WriteLine();
 
-            var choice = AnsiConsole.Prompt(MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO DELETE"));
+            var choice = MenuHelper.GetStackListPrompt(stackList, "SELECT STACK NAME TO DELETE");
 
             if (choice.ID == 0)
             {
@@ -267,7 +272,7 @@ public class StackMenu : IMenu
                 AnsiConsole.WriteLine();
                 if (stackList != null)
                 {
-                    var choice = AnsiConsole.Prompt(MenuHelper.GetStackNamePrompt(stackList));
+                    var choice = MenuHelper.GetStackNamePrompt(stackList);
                     if (choice.ID == 0)
                     {
                         AnsiConsole.WriteLine("Thank you. No Stack Selected");

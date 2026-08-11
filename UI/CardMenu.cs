@@ -193,7 +193,7 @@ public class CardMenu : IMenu
             AnsiConsole.WriteLine();
             while(stackList != null)
             {
-                var choice = AnsiConsole.Prompt(MenuHelper.GetStackNamePrompt(stackList));
+                var choice = MenuHelper.GetStackNamePrompt(stackList);
                 if (choice.ID == 0)
                 {
                     AnsiConsole.WriteLine("Thank you. No Changed will be made. Exiting to Menu.");
@@ -202,7 +202,7 @@ public class CardMenu : IMenu
                 }
                 AnsiConsole.WriteLine();
                 AnsiConsole.WriteLine($"Select FlashCard from {choice.Name} stack to edit");
-                var modify = AnsiConsole.Prompt(MenuHelper.GetCardNamesPrompt(choice.ID));
+                var modify = MenuHelper.GetCardNamesPrompt(choice.ID);
                 if (modify.StackID == 0)
                 {
                     AnsiConsole.WriteLine("No Flash Card was selected.");
