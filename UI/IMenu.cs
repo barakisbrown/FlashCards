@@ -4,7 +4,7 @@ namespace UI;
 
 public interface IMenu
 {
-    public const int SLEEP = 4000;
+    public const int SLEEP = 3000;
     public const string CardMenuTitle = "FlashCard-Menu.txt";
     public const string StackMenuTitle = "Stack-Menu.txt";
     public const string EditMenuTitle = "Edit-FlashCard-Menu.txt";
