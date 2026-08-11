@@ -4,6 +4,8 @@ using Dapper;
 using DataLayer.Models;
 using DataLayer.Models.DTO;
 using Microsoft.Data.SqlClient;
+using System.Data;
+using System.Reflection;
 
 public class SessionController
 {
@@ -62,16 +64,16 @@ public class SessionController
         {
             try
             {                
-                object[] param = [new 
-                    {   
-                        data.StudyDate,
-                        data.StudyScore,
-                        data.StackID,
-                        data.StackName,
-                        data.NumQuestions
-                }];
                 using var conn = MakeConnection;
-                var rows = conn.Execute(_insertSQL, new { param });
+                DynamicParameters param = new();
+                param.Add("StudyDate", data.StudyDate,direction: ParameterDirection.Input);
+                param.Add("StudyScore", data.StudyScore, direction: ParameterDirection.Input);
+                param.Add("StackID", data.StackID, direction: ParameterDirection.Input);
+                param.Add("StackName", data.StackName, direction: ParameterDirection.Input);
+                param.Add("NumQuestions", data.NumQuestions, direction: ParameterDirection.Input);
+                param.Add("RowsInserted", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                conn.Execute("AddNewSession", param, commandType: CommandType.StoredProcedure);
+                int rows = param.Get<int>("RowsInserted");
                 if (rows == 1)
                 {
                     added = true;

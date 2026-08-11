@@ -127,12 +127,12 @@ public class StackController
     /// </summary>
     /// <returns>A list of stacks to be displayed. The list includes a 'EXIT WITHOUT CHANGES' entry and excludes
     /// the stack named 'DEFAULT'.</returns>
-    public List<Stack> GetStackForDisplay()
+    public List<Stack> GetStackForDisplay(bool defaultOk = false)
     {
-        var list = GetAllStacks();
+        var list = GetAllStacks().ToList();
         list.Add(new DataLayer.Models.Stack { Name = "EXIT WITHOUT CHANGES" });
-        var item = list.Find(x => x.Name.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase)).ID;
-        list.RemoveAt(item);
+        if (!defaultOk)
+            list.Remove(list.Find(s => s.ID == 1));
         return list;
     }
 
